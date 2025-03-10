@@ -25,7 +25,7 @@ class TestLintMonitor(unittest.TestCase):
 
     def setUp(self):
         """Set up for test methods."""
-        self.monitor = LintMonitor()
+        self.monitor = LintMonitor(pylint_command=["pylint", "evoprompt/**py"])
         self.monitor.interval = self.INTERVAL
         self.monitor.max_iterations = self.MAX_ITERATIONS
         self.now = datetime.now()  # Store current datetime

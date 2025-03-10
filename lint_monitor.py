@@ -6,7 +6,7 @@ from lint_monitor.monitor import LintMonitor
 
 def main() -> None:
     """Main function."""
-    monitor = LintMonitor()
+    monitor = LintMonitor(pylint_command=["pylint", "evoprompt/**py"])
     monitor.run()
 
 

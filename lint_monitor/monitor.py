@@ -25,12 +25,13 @@ TIME_WINDOWS: list[tuple[str, timedelta]] = [
 class LintMonitor:
     """Monitor and track lint quality improvements over time."""
 
-    def __init__(self):
+    def __init__(self, pylint_command: list[str] = ["pylint", "evoprompt/**py"]):
         self.history: deque[tuple[datetime, float]] = deque()
         self.last_score: float | None = None
         self.console = Console()
         self.running = True
         self.max_iterations = float("inf")  # type: ignore
+        self.pylint_command = pylint_command
 
     def get_pylint_score(self) -> float | None:
         """Run pylint and extract the score."""
@@ -47,7 +48,7 @@ class LintMonitor:
     def _run_pylint(self) -> str | None:
         """Helper function to run pylint and return the last line of output."""
         result = subprocess.run(
-            ["pylint", "evoprompt/**py"], capture_output=True, text=True, check=True
+            self.pylint_command, capture_output=True, text=True, check=True
         )
         return result.stdout.strip()
 
