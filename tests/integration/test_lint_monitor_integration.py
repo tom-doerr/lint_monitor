@@ -1,4 +1,7 @@
 import subprocess
+
+import pytest
+
 from lint_monitor.monitor import LintMonitor
 
 
@@ -13,4 +16,4 @@ def test_monitor_runs_without_errors() -> None:
     except KeyboardInterrupt:
         pass
     except subprocess.CalledProcessError as e:
-        pytest.fail(f"LintMonitor.run() raised an exception: {e}")
+        assert False, f"LintMonitor.run() raised an exception: {e}"

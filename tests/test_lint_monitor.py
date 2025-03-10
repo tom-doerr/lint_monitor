@@ -1,9 +1,10 @@
 """Unit tests for the lint monitor package."""
 
-from unittest.mock import MagicMock, patch
-from datetime import datetime, timedelta
 from collections import deque
+from datetime import datetime, timedelta
 import subprocess
+from unittest.mock import MagicMock, patch
+
 import pytest
 
 from lint_monitor.monitor import LintMonitor
@@ -37,8 +38,8 @@ def test_calculate_improvements() -> None:
     ):
         monitor.history = deque(history)
         improvements = monitor.calculate_improvements()
-        assert len(improvements) == len(LintMonitor.TIME_WINDOWS)
-        for i, window in enumerate(LintMonitor.TIME_WINDOWS):
+        assert len(improvements) == len(monitor.TIME_WINDOWS)
+        for i, window in enumerate(monitor.TIME_WINDOWS):
             assert improvements[window[0]] == expected_values[i]
 
     run_test(
