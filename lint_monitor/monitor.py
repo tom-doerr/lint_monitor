@@ -81,7 +81,9 @@ class LintMonitor:
             improvements[window_name] = last - first
         return improvements
 
-    def _create_lint_table(self, score: float, improvements: dict[str, float | None]) -> Table:
+    def _create_lint_table(
+        self, score: float, improvements: dict[str, float | None]
+    ) -> Table:
         """Create a rich table for displaying lint quality."""
         table = Table(
             title="Lint Quality Monitor",
@@ -103,7 +105,9 @@ class LintMonitor:
         score_style = "green" if score >= 9.0 else "yellow" if score >= 7.0 else "red"
         table.add_row("Current Score", Text(f"{score:.2f}/10", style=score_style))
 
-    def _add_improvement_rows(self, table: Table, improvements: dict[str, float | None]) -> None:
+    def _add_improvement_rows(
+        self, table: Table, improvements: dict[str, float | None]
+    ) -> None:
         """Adds the improvement rows to the table."""
         for window, improvement in improvements.items():
             if improvement is not None:
