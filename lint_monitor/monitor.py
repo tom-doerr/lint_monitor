@@ -61,21 +61,27 @@ class LintMonitor:
             result = subprocess.run(
                 self.config.pylint_command, capture_output=True, text=True, check=True
             )
-            return result.stdout.strip()
-        except subprocess.CalledProcessError:
+            output = result.stdout.strip()
+            self._console.log(f"Pylint Output: {output}")  # Add debug logging
+            return output
+        except subprocess.CalledProcessError as e:
+            self._console.log(f"Pylint Error: {e}")  # Add debug logging
             return None
 
     def _extract_score(self, last_line: str) -> Optional[float]:
         """Helper function to extract the score from the pylint output."""
         if not last_line or "Your code has been rated at" not in last_line:
+            self._console.log("No score found in pylint output.")  # Add debug logging
             return None
 
         try:
             score_str = last_line.split("Your code has been rated at ")[1].split("/")[0]
             score = float(score_str)
-        except (IndexError, ValueError):
+            self._console.log(f"Extracted Score: {score}")  # Add debug logging
+            return score
+        except (IndexError, ValueError) as e:
+            self._console.log(f"Error extracting score: {e}")  # Add debug logging
             return None
-        return score
 
     def calculate_improvements(self) -> dict[str, Optional[float]]:
         """Calculate improvements for each time window."""
