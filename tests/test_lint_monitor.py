@@ -18,47 +18,42 @@ NOW = datetime.now()  # Store current datetime
 def test_get_pylint_score(mock_run: MagicMock) -> None:
     """Test the pylint score extraction functionality."""
     monitor = LintMonitor(pylint_command=["pylint", "evoprompt/**py"])
-    mock_run.return_value.stdout = "Your code has been rated at 9.50/10"
-    score = monitor.get_pylint_score()
-    assert score == 9.5
+    
+    def run_test(stdout: str, expected_score: float | None):
+        mock_run.return_value.stdout = stdout
+        score = monitor.get_pylint_score()
+        assert score == expected_score
+
+    mock_run.side_effect = None
+    run_test("Your code has been rated at 9.50/10", 9.5)
 
     mock_run.side_effect = subprocess.CalledProcessError(1, "pylint")
-    score = monitor.get_pylint_score()
-    assert score is None
+    run_test("Your code has been rated at 9.50/10", None)
 
-    mock_run.return_value.stdout = "Invalid score format"
-    score = monitor.get_pylint_score()
-    assert score is None
+    mock_run.side_effect = None
+    run_test("Invalid score format", None)
 
 
 def test_calculate_improvements() -> None:
     """Test the improvement calculation over time windows."""
     monitor = LintMonitor(pylint_command=["pylint", "evoprompt/**py"])
-    monitor.history = deque(
-        [
-            (NOW - timedelta(minutes=10), 7.0),
-            (NOW - timedelta(minutes=5), 8.0),
-            (NOW, 9.0),
-        ]
+    
+    def run_test(history: list[tuple[datetime, float]], expected_values: list[float | None]):
+        monitor.history = deque(history)
+        improvements = monitor.calculate_improvements()
+        assert len(improvements) == len(LintMonitor.TIME_WINDOWS)
+        for i, window in enumerate(LintMonitor.TIME_WINDOWS):
+            assert improvements[window[0]] == expected_values[i]
+
+    run_test(
+        [(NOW - timedelta(minutes=10), 7.0),
+         (NOW - timedelta(minutes=5), 8.0),
+         (NOW, 9.0)],
+        [1.0, 2.0, 2.0, 2.0, 2.0]
     )
 
-    improvements = monitor.calculate_improvements()
-    assert len(improvements) == len(LintMonitor.TIME_WINDOWS)
-    assert improvements["5m"] == 1.0
-    assert improvements["15m"] == 2.0
-    assert improvements["1h"] == 2.0
-    assert improvements["4h"] == 2.0
-    assert improvements["16h"] == 2.0
-
-    monitor.history = deque()
-    improvements = monitor.calculate_improvements()
-    assert len(improvements) == len(LintMonitor.TIME_WINDOWS)
-    assert all(value is None for value in improvements.values())
-
-    monitor.history = deque([(NOW, 7.0)])
-    improvements = monitor.calculate_improvements()
-    assert len(improvements) == len(LintMonitor.TIME_WINDOWS)
-    assert all(value is None for value in improvements.values())
+    run_test([], [None] * len(LintMonitor.TIME_WINDOWS))
+    run_test([(NOW, 7.0)], [None] * len(LintMonitor.TIME_WINDOWS))
 
 
 @patch("subprocess.run")
