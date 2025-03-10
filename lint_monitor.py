@@ -9,7 +9,6 @@ from datetime import datetime, timedelta
 from collections import deque
 from rich.console import Console
 from rich.table import Table
-from rich.progress import Progress
 from rich.panel import Panel
 from rich.text import Text
 
@@ -26,6 +25,7 @@ TIME_WINDOWS = [
 
 
 class LintMonitor:
+    """Monitor and track lint quality improvements over time."""
     def __init__(self):
         self.history = deque()
         self.last_score = None
@@ -90,7 +90,11 @@ class LintMonitor:
                     improvements = self.calculate_improvements()
 
                     # Create rich table for display
-                    table = Table(title="Lint Quality Monitor", show_header=True, header_style="bold magenta")
+                    table = Table(
+                        title="Lint Quality Monitor",
+                        show_header=True,
+                        header_style="bold magenta"
+                    )
                     table.add_column("Metric", style="cyan")
                     table.add_column("Value", justify="right")
                     
