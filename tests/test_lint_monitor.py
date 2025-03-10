@@ -42,9 +42,11 @@ class TestData:
     expected_values: list[float | None]
 
 
-def _assert_improvements(improvements: dict[str, Optional[float]],
-                         expected_values: list[float | None],
-                         lm: LintMonitor) -> None:
+def _assert_improvements(
+    improvements: dict[str, Optional[float]],
+    expected_values: list[float | None],
+    lm: LintMonitor,
+) -> None:
     assert len(improvements) == len(lm.TIME_WINDOWS)
     for i, window in enumerate(lm.TIME_WINDOWS):
         expected = expected_values[i]
@@ -79,10 +81,16 @@ def test_calculate_improvements(lm: LintMonitor) -> None:
     )
 
     # Test case 2: Insufficient data for any time window
-    _run_test(TestData(lm=lm, history=[], expected_values=[None] * len(lm.TIME_WINDOWS)))
+    _run_test(
+        TestData(lm=lm, history=[], expected_values=[None] * len(lm.TIME_WINDOWS))
+    )
 
     # Test case 3: Only one data point
-    _run_test(TestData(lm=lm, history=[(NOW, 7.0)], expected_values=[None] * len(lm.TIME_WINDOWS)))
+    _run_test(
+        TestData(
+            lm=lm, history=[(NOW, 7.0)], expected_values=[None] * len(lm.TIME_WINDOWS)
+        )
+    )
 
     # Test case 4: Data only within the shortest time window
     _run_test(
