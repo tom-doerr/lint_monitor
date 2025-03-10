@@ -1,7 +1,5 @@
 """Unit tests for the lint monitor package."""
 
-"""Unit tests for the lint monitor package."""
-
 from collections import deque
 from datetime import datetime, timedelta
 import subprocess
@@ -12,7 +10,7 @@ import pytest
 from lint_monitor.monitor import LintMonitor, MonitorConfig
 
 
-@pytest.fixture
+@pytest.fixture()
 def lm() -> LintMonitor:
     """Fixture to create a LintMonitor instance with a default configuration."""
     config = MonitorConfig(pylint_command=["pylint", "evoprompt/**py"])
@@ -57,10 +55,7 @@ def test_extract_score(mocker: pytest.fixture, lm: LintMonitor) -> None:
 def test_calculate_improvements(lm: LintMonitor) -> None:
     """Test the improvement calculation over time windows."""
 
-    def _assert_improvements(
-        improvements: dict[str, Optional[float]],
-        expected_values: list[float | None],
-    ) -> None:
+    def _assert_improvements(improvements: dict[str, Optional[float]], expected_values: list[float | None]) -> None:
         assert len(improvements) == len(lm.TIME_WINDOWS)
         for i, window in enumerate(lm.TIME_WINDOWS):
             expected = expected_values[i]
@@ -77,7 +72,8 @@ def test_calculate_improvements(lm: LintMonitor) -> None:
 
     test_cases = [
         (
-            [(NOW - timedelta(hours=1), 6.0), (NOW - timedelta(minutes=15), 7.0), (NOW - timedelta(minutes=5), 8.0), (NOW, 9.0)],
+            [(NOW - timedelta(hours=1), 6.0), (NOW - timedelta(minutes=15), 7.0), (NOW - timedelta(minutes=5), 8.0),
+             (NOW, 9.0)],
             [3.0, 2.0, 3.0, None, None],
         ),
         (

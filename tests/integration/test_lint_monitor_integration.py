@@ -1,6 +1,5 @@
 import subprocess
 import glob
-import os
 
 from lint_monitor.monitor import LintMonitor, MonitorConfig
 
