@@ -25,13 +25,15 @@ TIME_WINDOWS: list[tuple[str, timedelta]] = [
 class LintMonitor:
     """Monitor and track lint quality improvements over time."""
 
-    def __init__(self, pylint_command: list[str] = ["pylint", "evoprompt/**py"]):
+    DEFAULT_PYLINT_COMMAND: list[str] = ["pylint", "evoprompt/**py"]
+
+    def __init__(self, pylint_command: list[str] | None = None):
         self.history: deque[tuple[datetime, float]] = deque()
         self.last_score: float | None = None
-        self.console = Console()
+        self._console = Console()
         self.running = True
         self.max_iterations = float("inf")  # type: ignore
-        self.pylint_command = pylint_command
+        self.pylint_command = pylint_command if pylint_command is not None else self.DEFAULT_PYLINT_COMMAND
 
     def get_pylint_score(self) -> float | None:
         """Run pylint and extract the score."""
@@ -64,22 +66,32 @@ class LintMonitor:
 
     def calculate_improvements(self) -> dict[str, float | None]:
         """Calculate improvements for each time window."""
-        current_time = datetime.now()
         improvements: dict[str, float | None] = {}
+        current_time = datetime.now()
+
         for window_name, window_delta in TIME_WINDOWS:
-            window_start = current_time - window_delta
-            window_scores = [
-                score for timestamp, score in self.history if timestamp >= window_start
-            ]
+            improvement = self._calculate_improvement_for_window(
+                current_time, window_delta
+            )
+            improvements[window_name] = improvement
 
-            if len(window_scores) < 2:
-                improvements[window_name] = None
-                continue
-
-            first = window_scores[0]
-            last = window_scores[-1]
-            improvements[window_name] = last - first
         return improvements
+
+    def _calculate_improvement_for_window(
+        self, current_time: datetime, window_delta: timedelta
+    ) -> float | None:
+        """Calculates the improvement for a specific time window."""
+        window_start = current_time - window_delta
+        window_scores = [
+            score for timestamp, score in self.history if timestamp >= window_start
+        ]
+
+        if len(window_scores) < 2:
+            return None
+
+        first = window_scores[0]
+        last = window_scores[-1]
+        return last - first
 
     def _create_lint_table(
         self, score: float, improvements: dict[str, float | None]
@@ -96,19 +108,16 @@ class LintMonitor:
         return table
 
     def _add_table_columns(self, table: Table) -> None:
-        """Adds the columns to the table."""
         table.add_column("Metric", style="cyan")
         table.add_column("Value", justify="right")
 
     def _add_score_row(self, table: Table, score: float) -> None:
-        """Adds the score row to the table."""
         score_style = "green" if score >= 9.0 else "yellow" if score >= 7.0 else "red"
         table.add_row("Current Score", Text(f"{score:.2f}/10", style=score_style))
 
     def _add_improvement_rows(
         self, table: Table, improvements: dict[str, float | None]
     ) -> None:
-        """Adds the improvement rows to the table."""
         for window, improvement in improvements.items():
             if improvement is not None:
                 imp_style = "green" if improvement > 0 else "red"
@@ -118,28 +127,25 @@ class LintMonitor:
                 )
 
     def _log_and_display(self, score: float, table: Table, timestamp: datetime) -> None:
-        """Log the score to a file and display the table in the console."""
         self._log_score(score, timestamp)
         self._display_table(table, timestamp)
 
     def _log_score(self, score: float, timestamp: datetime) -> None:
-        """Logs the score to a file."""
         with open(LOG_FILE, "a", encoding="utf-8") as f:
             f.write(f"{timestamp.isoformat()} - Current: {score:.2f}/10\n")
 
     def _display_table(self, table: Table, timestamp: datetime) -> None:
-        """Displays the table in the console."""
         panel = Panel(
             table,
             title=f"Lint Quality at {timestamp.strftime('%Y-%m-%d %H:%M:%S')}",
             border_style="blue",
         )
-        self.console.clear()
-        self.console.print(panel)
+        self._console.clear()
+        self._console.print(panel)
 
     def run(self):
         """Main monitoring loop."""
-        self.console.print(
+        self._console.print(
             Panel(
                 f"Starting lint monitor. Logging to [bold cyan]{LOG_FILE}[/]\n"
                 "Press [bold red]Ctrl+C[/] to stop...",
@@ -152,25 +158,25 @@ class LintMonitor:
         try:
             while self.running and iteration < self.max_iterations:
                 self._process_iteration()
-                time.sleep(INTERVAL)
                 iteration += 1
+                time.sleep(INTERVAL)
 
         except KeyboardInterrupt:
-            self.console.print("\n[bold red]Monitoring stopped.[/]")
+            self._console.print("\n[bold red]Monitoring stopped.[/]")
 
     def _process_iteration(self) -> None:
-        """Processes a single iteration of the monitoring loop."""
         score = self.get_pylint_score()
-        if score is not None:
-            timestamp = datetime.now()
-            self.history.append((timestamp, score))
-            self._trim_history()
-            improvements = self.calculate_improvements()
-            table = self._create_lint_table(score, improvements)
-            self._log_and_display(score, table, timestamp)
+        if score is None:
+            return
+
+        timestamp = datetime.now()
+        self.history.append((timestamp, score))
+        self._trim_history()
+        improvements = self.calculate_improvements()
+        table = self._create_lint_table(score, improvements)
+        self._log_and_display(score, table, timestamp)
 
     def _trim_history(self) -> None:
-        """Keeps only the last 16 hours of data in the history."""
         cutoff = datetime.now() - TIME_WINDOWS[-1][1]
         while self.history and self.history[0][0] < cutoff:
             self.history.popleft()
