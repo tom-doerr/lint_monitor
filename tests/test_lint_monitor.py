@@ -1,12 +1,6 @@
 """Unit tests for the lint monitor package."""
 
-from unittest.mock import patch
-from datetime import datetime, timedelta
-from collections import deque
-import subprocess
-import pytest
-
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 from datetime import datetime, timedelta
 from collections import deque
 import subprocess
@@ -23,10 +17,7 @@ NOW = datetime.now()  # Store current datetime
 @pytest.fixture
 def monitor():
     """Fixture for creating a LintMonitor instance."""
-    monitor = LintMonitor(pylint_command=["pylint", "evoprompt/**py"])
-    monitor.interval = INTERVAL
-    monitor.max_iterations = MAX_ITERATIONS
-    return monitor
+    return LintMonitor(pylint_command=["pylint", "evoprompt/**py"])
 
 
 @patch("subprocess.run")
