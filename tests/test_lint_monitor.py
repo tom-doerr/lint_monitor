@@ -3,6 +3,7 @@
 from collections import deque
 from datetime import datetime, timedelta
 import subprocess
+from typing import Optional
 
 import pytest
 
@@ -33,11 +34,9 @@ def test_get_pylint_score(mocker: pytest.fixture, lm: LintMonitor) -> None:
     assert lm.get_pylint_score() is None
 
 
-def _assert_improvements(
-    improvements: dict[str, Optional[float]],
-    expected_values: list[float | None],
-    lm: LintMonitor,
-) -> None:
+def _assert_improvements(improvements: dict[str, Optional[float]],
+                         expected_values: list[float | None],
+                         lm: LintMonitor) -> None:
     assert len(improvements) == len(lm.TIME_WINDOWS)
     for i, window in enumerate(lm.TIME_WINDOWS):
         expected = expected_values[i]
