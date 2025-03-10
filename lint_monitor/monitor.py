@@ -148,12 +148,21 @@ class LintMonitor:
         iteration = 0
         try:
             while self.running and iteration < self.config.max_iterations:
-                self._process_iteration()
+                score = self.get_pylint_score()
+                if score is not None:
+                    timestamp = datetime.now()
+                    self.history.append((timestamp, score))
+                    self._trim_history()
+                    improvements = self.calculate_improvements()
+                    table = self._create_lint_table(score, improvements)
+                    self._log_and_display(score, table, timestamp)
+
                 iteration += 1
                 time.sleep(INTERVAL)
 
         except KeyboardInterrupt:
             self._console.print("\n[bold red]Monitoring stopped.[/]")
+            self.running = False
 
     def _process_iteration(self) -> None:
         score = self.get_pylint_score()
