@@ -21,7 +21,9 @@ def main() -> None:
 
     if args.pylint_command == ["pylint"]:
         # If the user didn't specify a command, use the default which is pylint + all python files
-        pylint_command = ["pylint"] + subprocess.check_output(["git", "ls-files", "*.py"]).decode("utf-8").split()
+        pylint_command = ["pylint"] + subprocess.check_output(
+            ["git", "ls-files", "*.py"]
+        ).decode("utf-8").split()
     else:
         pylint_command = args.pylint_command
 
