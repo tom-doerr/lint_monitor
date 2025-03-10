@@ -6,7 +6,7 @@ from collections import deque
 import subprocess
 import pytest
 
-from lint_monitor.monitor import LintMonitor
+from lint_monitor.monitor import LintMonitor, TIME_WINDOWS
 
 
 INTERVAL = 0.1  # Shorten interval for testing

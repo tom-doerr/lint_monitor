@@ -60,13 +60,12 @@ class LintMonitor:
 
     def _extract_score(self, last_line: str) -> float | None:
         """Helper function to extract the score from the pylint output."""
-        if "Your code has been rated at" not in last_line:
-            return None
-        match = last_line.split("Your code has been rated at ")
-        if len(match) < 2:
-            return None
-        score_str = match[1].split("/")[0]
-        return float(score_str)
+        if "Your code has been rated at" in last_line:
+            match = last_line.split("Your code has been rated at ")
+            if len(match) >= 2:
+                score_str = match[1].split("/")[0]
+                return float(score_str)
+        return None
 
     def calculate_improvements(self) -> dict[str, float | None]:
         """Calculate improvements for each time window."""
@@ -90,12 +89,11 @@ class LintMonitor:
             score for timestamp, score in self.history if timestamp >= window_start
         ]
 
-        if len(window_scores) < 2:
-            return None
-
-        first = window_scores[0]
-        last = window_scores[-1]
-        return last - first
+        if len(window_scores) >= 2:
+            first = window_scores[0]
+            last = window_scores[-1]
+            return last - first
+        return None
 
     def _create_lint_table(
         self, score: float, improvements: dict[str, float | None]
@@ -170,15 +168,13 @@ class LintMonitor:
 
     def _process_iteration(self) -> None:
         score = self.get_pylint_score()
-        if score is None:
-            return
-
-        timestamp = datetime.now()
-        self.history.append((timestamp, score))
-        self._trim_history()
-        improvements = self.calculate_improvements()
-        table = self._create_lint_table(score, improvements)
-        self._log_and_display(score, table, timestamp)
+        if score is not None:
+            timestamp = datetime.now()
+            self.history.append((timestamp, score))
+            self._trim_history()
+            improvements = self.calculate_improvements()
+            table = self._create_lint_table(score, improvements)
+            self._log_and_display(score, table, timestamp)
 
     def _trim_history(self) -> None:
         cutoff = datetime.now() - TIME_WINDOWS[-1][1]

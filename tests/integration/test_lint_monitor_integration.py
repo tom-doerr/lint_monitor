@@ -11,5 +11,7 @@ def test_monitor_runs_without_errors() -> None:
     monitor.max_iterations = 1  # Limit to one iteration for testing
     try:
         monitor.run()
-    except Exception as e:  # Catching a more specific exception
+    except KeyboardInterrupt:
+        pass
+    except Exception as e:
         pytest.fail(f"LintMonitor.run() raised an exception: {e}")
