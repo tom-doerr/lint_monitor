@@ -20,8 +20,5 @@ def main() -> None:
 
     config = MonitorConfig(pylint_command=args.pylint_command)
     monitor = LintMonitor(config)
-    monitor.run()
 
 
-if __name__ == "__main__":
-    main()

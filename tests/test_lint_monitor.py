@@ -9,6 +9,7 @@ from typing import Optional
 import pytest
 
 from lint_monitor.monitor import LintMonitor, MonitorConfig
+from lint_monitor.table_formatter import create_lint_table
 
 
 @pytest.fixture
@@ -63,10 +64,10 @@ class TestData:
 def _assert_improvements(
     improvements: dict[str, Optional[float]],
     expected_values: list[float | None],
-    lm: LintMonitor,
+    lint_monitor: LintMonitor,
 ) -> None:
-    assert len(improvements) == len(lm.TIME_WINDOWS)
-    for i, window in enumerate(lm.TIME_WINDOWS):
+    assert len(improvements) == len(lint_monitor.TIME_WINDOWS)
+    for i, window in enumerate(lint_monitor.TIME_WINDOWS):
         expected = expected_values[i]
         actual = improvements[window[0]]
         if expected is None:
@@ -81,12 +82,12 @@ def _run_test(test_data: TestData) -> None:
     _assert_improvements(improvements, test_data.expected_values, test_data.lm)
 
 
-def test_calculate_improvements(lm: LintMonitor) -> None:
+def test_calculate_improvements(lint_monitor: LintMonitor) -> None:
     """Test the improvement calculation over time windows."""
 
     test_cases = [
         TestData(
-            lm=lm,
+            lm=lint_monitor,
             history=[
                 (NOW - timedelta(hours=1), 6.0),
                 (NOW - timedelta(minutes=15), 7.0),
@@ -95,12 +96,12 @@ def test_calculate_improvements(lm: LintMonitor) -> None:
             ],
             expected_values=[3.0, 2.0, 3.0, None, None],
         ),
-        TestData(lm=lm, history=[], expected_values=[None] * len(lm.TIME_WINDOWS)),
+        TestData(lm=lint_monitor, history=[], expected_values=[None] * len(lint_monitor.TIME_WINDOWS)),
         TestData(
-            lm=lm, history=[(NOW, 7.0)], expected_values=[None] * len(lm.TIME_WINDOWS)
+            lm=lint_monitor, history=[(NOW, 7.0)], expected_values=[None] * len(lint_monitor.TIME_WINDOWS)
         ),
         TestData(
-            lm=lm,
+            lm=lint_monitor,
             history=[(NOW - timedelta(minutes=4), 7.0), (NOW, 8.0)],
             expected_values=[1.0, None, None, None, None],
         ),
@@ -109,43 +110,37 @@ def test_calculate_improvements(lm: LintMonitor) -> None:
         _run_test(test_data)
 
 
-def test_get_pylint_score_no_score(mocker: pytest.fixture, lm: LintMonitor) -> None:
+def test_get_pylint_score_no_score(mocker: pytest.fixture, lint_monitor: LintMonitor) -> None:
     """Test the pylint score extraction when no score is returned."""
     mock_run = mocker.patch("subprocess.run")
     mock_run.return_value.stdout = "Some other output"
     mock_run.return_value.returncode = 1  # Simulate an error
-    lm.get_pylint_score()
-    assert lm.get_pylint_score() is None
+    lint_monitor.get_pylint_score()
+    assert lint_monitor.get_pylint_score() is None
 
 
-def test_run(mocker: pytest.fixture) -> None:
+def test_run(mocker: pytest.fixture, lint_monitor: LintMonitor) -> None:
     """Test the main monitoring loop functionality."""
-    config = MonitorConfig(pylint_command=["pylint", "evoprompt/**py"])
-    monitor = LintMonitor(config)
-    monitor.get_pylint_score = mocker.MagicMock(return_value=9.0)
-    monitor.running = False  # Stop the loop after one iteration
+    lint_monitor.get_pylint_score = mocker.MagicMock(return_value=9.0)
+    lint_monitor.running = False  # Stop the loop after one iteration
     mock_console = mocker.patch("lint_monitor.monitor.Console")
 
-    monitor.run()
+    lint_monitor.run()
 
 
-def test_run_score_below_7(mocker: pytest.fixture) -> None:
+def test_run_score_below_7(mocker: pytest.fixture, lint_monitor: LintMonitor) -> None:
     """Test the main monitoring loop functionality with score below 7."""
-    config = MonitorConfig(pylint_command=["pylint", "evoprompt/**py"])
-    monitor = LintMonitor(config)
-    monitor.get_pylint_score = mocker.MagicMock(return_value=6.0)
-    monitor.running = False  # Stop the loop after one iteration
+    lint_monitor.get_pylint_score = mocker.MagicMock(return_value=6.0)
+    lint_monitor.running = False  # Stop the loop after one iteration
     mock_console = mocker.patch("lint_monitor.monitor.Console")
 
-    monitor.run()
+    lint_monitor.run()
 
 
-def test_run_score_between_7_and_9(mocker: pytest.fixture) -> None:
+def test_run_score_between_7_and_9(mocker: pytest.fixture, lint_monitor: LintMonitor) -> None:
     """Test the main monitoring loop functionality with score between 7 and 9."""
-    config = MonitorConfig(pylint_command=["pylint", "evoprompt/**py"])
-    monitor = LintMonitor(config)
-    monitor.get_pylint_score = mocker.MagicMock(return_value=8.0)
-    monitor.running = False  # Stop the loop after one iteration
+    lint_monitor.get_pylint_score = mocker.MagicMock(return_value=8.0)
+    lint_monitor.running = False  # Stop the loop after one iteration
     mock_console = mocker.patch("lint_monitor.monitor.Console")
 
-    monitor.run()
+    lint_monitor.run()
