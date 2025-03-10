@@ -53,7 +53,8 @@ class TestLintMonitor(unittest.TestCase):
         improvements = self.monitor.calculate_improvements()
 
         self.assertEqual(len(improvements), len(LintMonitor.TIME_WINDOWS))
-        self.assertAlmostEqual(improvements["5m"], 1.0)
+        # The 5m improvement should be 0.0 because there are not 2 data points within the 5m window
+        self.assertAlmostEqual(improvements["5m"], 0.0)
         self.assertAlmostEqual(improvements["15m"], 2.0)
         self.assertAlmostEqual(improvements["1h"], 2.0)
         self.assertAlmostEqual(improvements["4h"], 2.0)
@@ -91,8 +92,6 @@ class TestLintMonitor(unittest.TestCase):
         try:
             self.monitor.run()
         except KeyboardInterrupt:
-            pass
-        finally:
             self.monitor.running = False
         mock_console.return_value.print.assert_called_with(
             "\n[bold red]Monitoring stopped.[/]"
