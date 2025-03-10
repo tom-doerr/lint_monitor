@@ -14,8 +14,8 @@ MAX_ITERATIONS = 5  # Limit iterations
 NOW = datetime.now()  # Store current datetime
 
 
-@pytest.fixture
-def monitor():
+@pytest.fixture()
+def monitor() -> LintMonitor:
     """Fixture for creating a LintMonitor instance."""
     return LintMonitor(pylint_command=["pylint", "evoprompt/**py"])
 
@@ -47,7 +47,7 @@ def test_calculate_improvements(monitor: LintMonitor) -> None:
     )
 
     improvements = monitor.calculate_improvements()
-    assert len(improvements) == len(TIME_WINDOWS)
+    assert len(improvements) == len(LintMonitor.TIME_WINDOWS)
     assert improvements["5m"] == 1.0
     assert improvements["15m"] == 2.0
     assert improvements["1h"] == 2.0
@@ -56,12 +56,12 @@ def test_calculate_improvements(monitor: LintMonitor) -> None:
 
     monitor.history = deque()
     improvements = monitor.calculate_improvements()
-    assert len(improvements) == len(TIME_WINDOWS)
+    assert len(improvements) == len(LintMonitor.TIME_WINDOWS)
     assert all(value is None for value in improvements.values())
 
     monitor.history = deque([(NOW, 7.0)])
     improvements = monitor.calculate_improvements()
-    assert len(improvements) == len(TIME_WINDOWS)
+    assert len(improvements) == len(LintMonitor.TIME_WINDOWS)
     assert all(value is None for value in improvements.values())
 
 
