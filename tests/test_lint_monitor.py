@@ -1,19 +1,11 @@
 """Unit tests for the lint monitor package."""
 
-import unittest
-from unittest.mock import patch
-from datetime import datetime, timedelta
-from collections import deque
 import subprocess
-from lint_monitor import LintMonitor
-
-
-from typing import Any
 import unittest
-from unittest.mock import patch, MagicMock
-from datetime import datetime, timedelta
 from collections import deque
-import subprocess
+from datetime import datetime, timedelta
+from unittest.mock import MagicMock, patch
+
 from lint_monitor.monitor import LintMonitor
 
 
