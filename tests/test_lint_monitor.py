@@ -37,8 +37,8 @@ def test_calculate_improvements() -> None:
     def run_test(history: list[tuple[datetime, float]], expected_values: list[float | None]):
         monitor.history = deque(history)
         improvements = monitor.calculate_improvements()
-        assert len(improvements) == len(monitor.TIME_WINDOWS)
-        for i, window in enumerate(monitor.TIME_WINDOWS):
+        assert len(improvements) == len(LintMonitor.TIME_WINDOWS)
+        for i, window in enumerate(LintMonitor.TIME_WINDOWS):
             assert improvements[window[0]] == expected_values[i]
 
     run_test(
@@ -48,8 +48,8 @@ def test_calculate_improvements() -> None:
         [1.0, 2.0, 2.0, 2.0, 2.0]
     )
 
-    run_test([], [None] * len(monitor.TIME_WINDOWS))
-    run_test([(NOW, 7.0)], [None] * len(monitor.TIME_WINDOWS))
+    run_test([], [None] * len(LintMonitor.TIME_WINDOWS))
+    run_test([(NOW, 7.0)], [None] * len(LintMonitor.TIME_WINDOWS))
 
 
 @patch("subprocess.run")
