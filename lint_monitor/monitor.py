@@ -133,7 +133,9 @@ class LintMonitor:
                     while self.history and self.history[0][0] < cutoff:
                         self.history.popleft()
 
-                    improvements:  dict[str, float | None] = self.calculate_improvements()
+                    improvements: dict[str, float | None] = (
+                        self.calculate_improvements()
+                    )
                     table = self._create_lint_table(score, improvements)
                     self._log_and_display(score, table, timestamp)
 
