@@ -1,7 +1,5 @@
 """Lint monitor package for tracking code quality improvements."""
 
-"""Lint monitor package for tracking code quality improvements."""
-
 import subprocess
 import time
 from collections import deque
