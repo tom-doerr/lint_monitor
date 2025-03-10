@@ -30,6 +30,24 @@ def test_get_pylint_score(mocker: pytest.fixture, lm: LintMonitor) -> None:
     mock_run.side_effect = subprocess.CalledProcessError(1, "pylint")
     assert lm.get_pylint_score() is None
 
+
+def test_run_pylint(mocker: pytest.fixture, lm: LintMonitor) -> None:
+    """Test the _run_pylint method."""
+    mock_run = mocker.patch("subprocess.run")
+    mock_run.return_value.stdout = "Your code has been rated at 9.50/10"
+    lm._run_pylint()
+    mock_run.assert_called_once()
+
+    mock_run.side_effect = subprocess.CalledProcessError(1, "pylint")
+    assert lm._run_pylint() is None
+
+
+def test_extract_score(mocker: pytest.fixture, lm: LintMonitor) -> None:
+    """Test the _extract_score method."""
+    assert lm._extract_score("Your code has been rated at 9.50/10") == 9.5
+    assert lm._extract_score("Invalid score format") is None
+    assert lm._extract_score(None) is None
+
     mock_run.side_effect = None
     mock_run.return_value.stdout = "Invalid score format"
     assert lm.get_pylint_score() is None
@@ -66,8 +84,7 @@ def _run_test(test_data: TestData) -> None:
 def test_calculate_improvements(lm: LintMonitor) -> None:
     """Test the improvement calculation over time windows."""
 
-    # Test case 1: Sufficient data for all time windows
-    _run_test(
+    test_cases = [
         TestData(
             lm=lm,
             history=[
@@ -77,29 +94,19 @@ def test_calculate_improvements(lm: LintMonitor) -> None:
                 (NOW, 9.0),
             ],
             expected_values=[3.0, 2.0, 3.0, None, None],
-        )
-    )
-
-    # Test case 2: Insufficient data for any time window
-    _run_test(
-        TestData(lm=lm, history=[], expected_values=[None] * len(lm.TIME_WINDOWS))
-    )
-
-    # Test case 3: Only one data point
-    _run_test(
+        ),
+        TestData(lm=lm, history=[], expected_values=[None] * len(lm.TIME_WINDOWS)),
         TestData(
             lm=lm, history=[(NOW, 7.0)], expected_values=[None] * len(lm.TIME_WINDOWS)
-        )
-    )
-
-    # Test case 4: Data only within the shortest time window
-    _run_test(
+        ),
         TestData(
             lm=lm,
             history=[(NOW - timedelta(minutes=4), 7.0), (NOW, 8.0)],
             expected_values=[1.0, None, None, None, None],
-        )
-    )
+        ),
+    ]
+    for test_data in test_cases:
+        _run_test(test_data)
 
 
 def test_get_pylint_score_no_score(mocker: pytest.fixture, lm: LintMonitor) -> None:
@@ -116,11 +123,10 @@ def test_run(mocker: pytest.fixture) -> None:
     config = MonitorConfig(pylint_command=["pylint", "evoprompt/**py"])
     monitor = LintMonitor(config)
     monitor.get_pylint_score = mocker.MagicMock(return_value=9.0)
+    monitor.running = False  # Stop the loop after one iteration
     mock_console = mocker.patch("lint_monitor.monitor.Console")
-    mock_console.return_value.print.side_effect = KeyboardInterrupt()
 
-    with pytest.raises(KeyboardInterrupt):
-        monitor.run()
+    monitor.run()
 
 
 def test_run_score_below_7(mocker: pytest.fixture) -> None:
@@ -128,11 +134,10 @@ def test_run_score_below_7(mocker: pytest.fixture) -> None:
     config = MonitorConfig(pylint_command=["pylint", "evoprompt/**py"])
     monitor = LintMonitor(config)
     monitor.get_pylint_score = mocker.MagicMock(return_value=6.0)
+    monitor.running = False  # Stop the loop after one iteration
     mock_console = mocker.patch("lint_monitor.monitor.Console")
-    mock_console.return_value.print.side_effect = KeyboardInterrupt()
 
-    with pytest.raises(KeyboardInterrupt):
-        monitor.run()
+    monitor.run()
 
 
 def test_run_score_between_7_and_9(mocker: pytest.fixture) -> None:
@@ -140,8 +145,7 @@ def test_run_score_between_7_and_9(mocker: pytest.fixture) -> None:
     config = MonitorConfig(pylint_command=["pylint", "evoprompt/**py"])
     monitor = LintMonitor(config)
     monitor.get_pylint_score = mocker.MagicMock(return_value=8.0)
+    monitor.running = False  # Stop the loop after one iteration
     mock_console = mocker.patch("lint_monitor.monitor.Console")
-    mock_console.return_value.print.side_effect = KeyboardInterrupt()
 
-    with pytest.raises(KeyboardInterrupt):
-        monitor.run()
+    monitor.run()
