@@ -1,5 +1,4 @@
 import subprocess
-import pytest
 from lint_monitor.monitor import LintMonitor
 
 
