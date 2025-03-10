@@ -102,7 +102,9 @@ class LintMonitor:
             for window_name, window_delta in self.TIME_WINDOWS
         }
 
-    def _calculate_improvement_for_window(self, current_time: datetime, window_delta: timedelta) -> Optional[float]:
+    def _calculate_improvement_for_window(
+        self, current_time: datetime, window_delta: timedelta
+    ) -> Optional[float]:
         """Calculates the improvement for a specific time window."""
         window_scores = self._get_window_scores(current_time, window_delta)
         if not window_scores or len(window_scores) < 2:
@@ -113,7 +115,9 @@ class LintMonitor:
         """Calculates the difference between the last and first scores."""
         return window_scores[-1] - window_scores[0]
 
-    def _get_window_scores(self, current_time: datetime, window_delta: timedelta) -> list[float]:
+    def _get_window_scores(
+        self, current_time: datetime, window_delta: timedelta
+    ) -> list[float]:
         """Helper function to get the scores within a time window."""
         window_start = current_time - window_delta
         return [score for timestamp, score in self.history if timestamp >= window_start]
@@ -132,7 +136,11 @@ class LintMonitor:
             f.write(f"{timestamp.isoformat()} - Current: {score:.2f}/10\n")
 
     def _display_table(self, table: Table, timestamp: datetime) -> None:
-        panel = Panel(table, title=f"Lint Quality at {timestamp.strftime('%Y-%m-%d %H:%M:%S')}", border_style="blue")
+        panel = Panel(
+            table,
+            title=f"Lint Quality at {timestamp.strftime('%Y-%m-%d %H:%M:%S')}",
+            border_style="blue",
+        )
         self._console.clear()
         self._console.print(panel)
 
