@@ -1,6 +1,7 @@
 """Unit tests for the lint monitor package."""
 
 from collections import deque
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 import subprocess
 from typing import Optional
@@ -34,6 +35,13 @@ def test_get_pylint_score(mocker: pytest.fixture, lm: LintMonitor) -> None:
     assert lm.get_pylint_score() is None
 
 
+@dataclass
+class TestData:
+    lm: LintMonitor
+    history: list[tuple[datetime, float]]
+    expected_values: list[float | None]
+
+
 def _assert_improvements(improvements: dict[str, Optional[float]],
                          expected_values: list[float | None],
                          lm: LintMonitor) -> None:
@@ -47,14 +55,10 @@ def _assert_improvements(improvements: dict[str, Optional[float]],
             assert actual == pytest.approx(expected)
 
 
-def _run_test(
-    lm: LintMonitor,
-    history: list[tuple[datetime, float]],
-    expected_values: list[float | None],
-) -> None:
-    lm.history = deque(history)
-    improvements = lm.calculate_improvements()
-    _assert_improvements(improvements, expected_values, lm)
+def _run_test(test_data: TestData) -> None:
+    test_data.lm.history = deque(test_data.history)
+    improvements = test_data.lm.calculate_improvements()
+    _assert_improvements(improvements, test_data.expected_values, test_data.lm)
 
 
 def test_calculate_improvements(lm: LintMonitor) -> None:
@@ -81,10 +85,7 @@ def test_calculate_improvements(lm: LintMonitor) -> None:
     # Test case 4: Data only within the shortest time window
     _run_test(
         lm,
-        [
-            (NOW - timedelta(minutes=4), 7.0),
-            (NOW, 8.0),
-        ],
+        [(NOW - timedelta(minutes=4), 7.0), (NOW, 8.0)],
         [1.0, None, None, None, None],
     )
 
