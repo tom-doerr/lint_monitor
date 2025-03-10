@@ -20,7 +20,9 @@ def lint_monitor() -> LintMonitor:
 NOW = datetime.now()
 
 
-def test_get_pylint_score_func(mocker: pytest.fixture, lint_monitor: LintMonitor) -> None:
+def test_get_pylint_score_func(
+    mocker: pytest.fixture, lint_monitor: LintMonitor
+) -> None:
     """Test the pylint score extraction functionality."""
     mock_run = mocker.patch("subprocess.run")
     mock_run.return_value.stdout = "Your code has been rated at 9.50/10"
@@ -104,29 +106,33 @@ def test_run_func(lint_monitor: LintMonitor, mocker: pytest.fixture) -> None:
     lint_monitor.get_pylint_score = mocker.MagicMock(return_value=9.0)
     lint_monitor.running = False  # Stop the loop after one iteration
     mocker.patch("lint_monitor.monitor.Console")
-    mocker.patch.object(lint_monitor, '_create_lint_table')
+    mocker.patch.object(lint_monitor, "_create_lint_table")
 
     lint_monitor.run()
     lint_monitor._create_lint_table.assert_called_once()
 
 
-def test_run_score_below_7_func(lint_monitor: LintMonitor, mocker: pytest.fixture) -> None:
+def test_run_score_below_7_func(
+    lint_monitor: LintMonitor, mocker: pytest.fixture
+) -> None:
     """Test the main monitoring loop functionality with score below 7."""
     lint_monitor.get_pylint_score = mocker.MagicMock(return_value=6.0)
     lint_monitor.running = False  # Stop the loop after one iteration
     mocker.patch("lint_monitor.monitor.Console")
-    mocker.patch.object(lint_monitor, '_create_lint_table')
+    mocker.patch.object(lint_monitor, "_create_lint_table")
 
     lint_monitor.run()
     lint_monitor._create_lint_table.assert_called_once()
 
 
-def test_run_score_between_7_and_9_func(lint_monitor: LintMonitor, mocker: pytest.fixture) -> None:
+def test_run_score_between_7_and_9_func(
+    lint_monitor: LintMonitor, mocker: pytest.fixture
+) -> None:
     """Test the main monitoring loop functionality with score between 7 and 9."""
     lint_monitor.get_pylint_score = mocker.MagicMock(return_value=8.0)
     lint_monitor.running = False  # Stop the loop after one iteration
     mocker.patch("lint_monitor.monitor.Console")
-    mocker.patch.object(lint_monitor, '_create_lint_table')
+    mocker.patch.object(lint_monitor, "_create_lint_table")
 
     lint_monitor.run()
     lint_monitor._create_lint_table.assert_called_once()

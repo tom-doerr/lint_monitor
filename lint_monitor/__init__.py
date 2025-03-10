@@ -25,5 +25,3 @@ TIME_WINDOWS: list[tuple[str, timedelta]] = [
     ("4h", timedelta(hours=4)),
     ("16h", timedelta(hours=16)),
 ]
-
-
