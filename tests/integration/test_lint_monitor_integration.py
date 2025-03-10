@@ -2,16 +2,8 @@ import subprocess
 
 from lint_monitor.monitor import LintMonitor, MonitorConfig
 
-
-"""Integration tests for the lint monitor package."""
-
-import subprocess
-
-from lint_monitor.monitor import LintMonitor, MonitorConfig
-
-# Define pylint_command outside the test function
 pylint_command = ["pylint"] + subprocess.check_output(
-    ["git", "ls-files", "*.py"]
+    ["git", "ls-files", "*.py"], shell=True
 ).decode("utf-8").split()
 
 

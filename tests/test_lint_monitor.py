@@ -9,6 +9,7 @@ from typing import Optional
 import pytest
 
 from lint_monitor.monitor import LintMonitor, MonitorConfig
+from lint_monitor.monitor import LintMonitor, MonitorConfig
 from lint_monitor.table_formatter import create_lint_table
 
 
