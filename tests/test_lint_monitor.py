@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch
 from datetime import datetime, timedelta
 from collections import deque
 import subprocess
+import pytest
 
 from lint_monitor.monitor import LintMonitor
 
@@ -77,8 +78,7 @@ def test_run(mock_console: MagicMock) -> None:
 
     assert (
         mock_console.return_value.print.call_args[0][0]
-        == "\n[bold red]Monitoring stopped.[/]"
-    )
+        == "\n[bold red]Monitoring stopped.[/]")
     assert monitor.running is False
 
 
@@ -94,8 +94,7 @@ def test_run_score_below_7(mock_console: MagicMock) -> None:
 
     assert (
         mock_console.return_value.print.call_args[0][0]
-        == "\n[bold red]Monitoring stopped.[/]"
-    )
+        == "\n[bold red]Monitoring stopped.[/]")
     assert monitor.running is False
 
 
@@ -111,6 +110,5 @@ def test_run_score_between_7_and_9(mock_console: MagicMock) -> None:
 
     assert (
         mock_console.return_value.print.call_args[0][0]
-        == "\n[bold red]Monitoring stopped.[/]"
-    )
+        == "\n[bold red]Monitoring stopped.[/]")
     assert monitor.running is False
