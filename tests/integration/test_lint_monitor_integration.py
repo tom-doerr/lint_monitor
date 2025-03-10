@@ -13,5 +13,5 @@ def test_monitor_runs_without_errors() -> None:
         monitor.run()
     except KeyboardInterrupt:
         pass
-    except Exception as e:
+    except subprocess.CalledProcessError as e:
         pytest.fail(f"LintMonitor.run() raised an exception: {e}")

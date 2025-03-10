@@ -6,7 +6,7 @@ from collections import deque
 import subprocess
 import pytest
 
-from lint_monitor.monitor import LintMonitor, TIME_WINDOWS
+from lint_monitor.monitor import LintMonitor
 
 
 INTERVAL = 0.1  # Shorten interval for testing
@@ -18,20 +18,16 @@ NOW = datetime.now()  # Store current datetime
 def test_get_pylint_score(mock_run: MagicMock) -> None:
     """Test the pylint score extraction functionality."""
     monitor = LintMonitor(pylint_command=["pylint", "evoprompt/**py"])
-    
-    def run_test(stdout: str, expected_score: float | None):
-        mock_run.return_value.stdout = stdout
-        score = monitor.get_pylint_score()
-        assert score == expected_score
 
-    mock_run.side_effect = None
-    run_test("Your code has been rated at 9.50/10", 9.5)
+    mock_run.return_value.stdout = "Your code has been rated at 9.50/10"
+    assert monitor.get_pylint_score() == 9.5
 
     mock_run.side_effect = subprocess.CalledProcessError(1, "pylint")
-    run_test("Your code has been rated at 9.50/10", None)
+    assert monitor.get_pylint_score() is None
 
     mock_run.side_effect = None
-    run_test("Invalid score format", None)
+    mock_run.return_value.stdout = "Invalid score format"
+    assert monitor.get_pylint_score() is None
 
 
 def test_calculate_improvements() -> None:
@@ -41,8 +37,8 @@ def test_calculate_improvements() -> None:
     def run_test(history: list[tuple[datetime, float]], expected_values: list[float | None]):
         monitor.history = deque(history)
         improvements = monitor.calculate_improvements()
-        assert len(improvements) == len(LintMonitor.TIME_WINDOWS)
-        for i, window in enumerate(LintMonitor.TIME_WINDOWS):
+        assert len(improvements) == len(monitor.TIME_WINDOWS)
+        for i, window in enumerate(monitor.TIME_WINDOWS):
             assert improvements[window[0]] == expected_values[i]
 
     run_test(
@@ -52,8 +48,8 @@ def test_calculate_improvements() -> None:
         [1.0, 2.0, 2.0, 2.0, 2.0]
     )
 
-    run_test([], [None] * len(LintMonitor.TIME_WINDOWS))
-    run_test([(NOW, 7.0)], [None] * len(LintMonitor.TIME_WINDOWS))
+    run_test([], [None] * len(monitor.TIME_WINDOWS))
+    run_test([(NOW, 7.0)], [None] * len(monitor.TIME_WINDOWS))
 
 
 @patch("subprocess.run")
