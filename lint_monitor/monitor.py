@@ -181,3 +181,16 @@ class LintMonitor:
         cutoff = datetime.now() - self.TIME_WINDOWS[-1][1]
         while self.history and self.history[0][0] < cutoff:
             self.history.popleft()
+
+    # def __run_pylint(self) -> Optional[str]:
+    #     """Helper function to run pylint and return the last line of output."""
+    #     try:
+    #         result = subprocess.run(
+    #             self.config.pylint_command, capture_output=True, text=True, check=True
+    #         )
+    #         output = result.stdout.strip()
+    #         self._console.log(f"Pylint Output: {output}")
+    #         return output
+    #     except subprocess.CalledProcessError as e:
+    #         self._console.log(f"Pylint Error: {e}")
+    #         return None
