@@ -128,6 +128,10 @@ class LintMonitor:
             self.console.print("\n[bold red]Monitoring stopped.[/]")
 
 
-if __name__ == "__main__":
+def main():
+    """Entry point for the lint-monitor CLI."""
     monitor = LintMonitor()
     monitor.run()
+
+if __name__ == "__main__":
+    main()
