@@ -92,7 +92,9 @@ class LintMonitor:
         """Calculate improvements for each time window."""
         current_time = datetime.now()
         return {
-            window_name: self._calculate_improvement_for_window(current_time, window_delta)
+            window_name: self._calculate_improvement_for_window(
+                current_time, window_delta
+            )
             for window_name, window_delta in TIME_WINDOWS
         }
 
