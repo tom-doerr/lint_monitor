@@ -13,10 +13,21 @@ from lint_monitor.monitor import LintMonitor
 NOW = datetime.now()  # Store current datetime
 
 
+from unittest.mock import MagicMock, patch
+
+import pytest
+
+from lint_monitor.monitor import LintMonitor, MonitorConfig
+
+
+NOW = datetime.now()  # Store current datetime
+
+
 @patch("subprocess.run")
 def test_get_pylint_score(mock_run: MagicMock) -> None:
     """Test the pylint score extraction functionality."""
-    monitor = LintMonitor(pylint_command=["pylint", "evoprompt/**py"])
+    config = MonitorConfig(pylint_command=["pylint", "evoprompt/**py"])
+    monitor = LintMonitor(config)
 
     mock_run.return_value.stdout = "Your code has been rated at 9.50/10"
     assert monitor.get_pylint_score() == 9.5
@@ -31,7 +42,8 @@ def test_get_pylint_score(mock_run: MagicMock) -> None:
 
 def test_calculate_improvements() -> None:
     """Test the improvement calculation over time windows."""
-    monitor = LintMonitor(pylint_command=["pylint", "evoprompt/**py"])
+    config = MonitorConfig(pylint_command=["pylint", "evoprompt/**py"])
+    monitor = LintMonitor(config)
 
     def run_test(
         history: list[tuple[datetime, float]], expected_values: list[float | None]
@@ -58,7 +70,8 @@ def test_calculate_improvements() -> None:
 @patch("subprocess.run")
 def test_get_pylint_score_no_score(mock_run: MagicMock) -> None:
     """Test the pylint score extraction when no score is returned."""
-    monitor = LintMonitor(pylint_command=["pylint", "evoprompt/**py"])
+    config = MonitorConfig(pylint_command=["pylint", "evoprompt/**py"])
+    monitor = LintMonitor(config)
     mock_run.return_value.stdout = "Some other output"
     mock_run.return_value.returncode = 1  # Simulate an error
     monitor.get_pylint_score()
@@ -68,7 +81,8 @@ def test_get_pylint_score_no_score(mock_run: MagicMock) -> None:
 @patch("lint_monitor.monitor.Console")
 def test_run(mock_console: MagicMock) -> None:
     """Test the main monitoring loop functionality."""
-    monitor = LintMonitor(pylint_command=["pylint", "evoprompt/**py"])
+    config = MonitorConfig(pylint_command=["pylint", "evoprompt/**py"])
+    monitor = LintMonitor(config)
     monitor.get_pylint_score = MagicMock(return_value=9.0)
     mock_console.return_value.print.side_effect = KeyboardInterrupt()
 
@@ -79,7 +93,8 @@ def test_run(mock_console: MagicMock) -> None:
 @patch("lint_monitor.monitor.Console")
 def test_run_score_below_7(mock_console: MagicMock) -> None:
     """Test the main monitoring loop functionality with score below 7."""
-    monitor = LintMonitor(pylint_command=["pylint", "evoprompt/**py"])
+    config = MonitorConfig(pylint_command=["pylint", "evoprompt/**py"])
+    monitor = LintMonitor(config)
     monitor.get_pylint_score = MagicMock(return_value=6.0)
     mock_console.return_value.print.side_effect = KeyboardInterrupt()
 
@@ -90,7 +105,8 @@ def test_run_score_below_7(mock_console: MagicMock) -> None:
 @patch("lint_monitor.monitor.Console")
 def test_run_score_between_7_and_9(mock_console: MagicMock) -> None:
     """Test the main monitoring loop functionality with score between 7 and 9."""
-    monitor = LintMonitor(pylint_command=["pylint", "evoprompt/**py"])
+    config = MonitorConfig(pylint_command=["pylint", "evoprompt/**py"])
+    monitor = LintMonitor(config)
     monitor.get_pylint_score = MagicMock(return_value=8.0)
     mock_console.return_value.print.side_effect = KeyboardInterrupt()
 

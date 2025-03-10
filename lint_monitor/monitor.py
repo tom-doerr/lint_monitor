@@ -4,6 +4,7 @@
 import subprocess
 import time
 from collections import deque
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Optional
 
@@ -23,39 +24,42 @@ TIME_WINDOWS: list[tuple[str, timedelta]] = [
 ]
 
 
+@dataclass
+class MonitorConfig:
+    """Configuration parameters for the LintMonitor."""
+
+    pylint_command: Optional[list[str]] = None
+    max_iterations: float = float("inf")
+
+
 class LintMonitor:
     """Monitor and track lint quality improvements over time."""
 
     DEFAULT_PYLINT_COMMAND: list[str] = ["pylint", "evoprompt/**py"]
     TIME_WINDOWS = TIME_WINDOWS
 
-    def __init__(self, pylint_command: list[str] | None = None) -> None:
+    def __init__(self, config: Optional[MonitorConfig] = None) -> None:
         self.history: deque[tuple[datetime, float]] = deque()
         self.last_score: Optional[float] = None
         self._console = Console()
         self.running: bool = True
-        self.max_iterations: float = float("inf")
-        self.pylint_command: list[str] = (
-            pylint_command
-            if pylint_command is not None
-            else self.DEFAULT_PYLINT_COMMAND
-        )
+        self.config = config or MonitorConfig()
+        if self.config.pylint_command is None:
+            self.config.pylint_command = self.DEFAULT_PYLINT_COMMAND
 
     def get_pylint_score(self) -> Optional[float]:
         """Run pylint and extract the score."""
         try:
             result = self._run_pylint()
-            return self._extract_score(result) if result else None
+            return self._extract_score(result)
         except subprocess.CalledProcessError:
             return None
-        except ValueError as e:
-            raise e
 
     def _run_pylint(self) -> Optional[str]:
         """Helper function to run pylint and return the last line of output."""
         try:
             result = subprocess.run(
-                self.pylint_command, capture_output=True, text=True, check=True
+                self.config.pylint_command, capture_output=True, text=True, check=True
             )
             return result.stdout.strip()
         except subprocess.CalledProcessError:
@@ -63,13 +67,13 @@ class LintMonitor:
 
     def _extract_score(self, last_line: str) -> Optional[float]:
         """Helper function to extract the score from the pylint output."""
-        if "Your code has been rated at" in last_line:
-            try:
-                score_str = last_line.split("Your code has been rated at ")[1].split("/")[0]
-                return float(score_str)
-            except (IndexError, ValueError):
-                return None
-        return None
+        if not last_line or "Your code has been rated at" not in last_line:
+            return None
+        try:
+            score_str = last_line.split("Your code has been rated at ")[1].split("/")[0]
+            return float(score_str)
+        except (IndexError, ValueError):
+            return None
 
     def calculate_improvements(self) -> dict[str, Optional[float]]:
         """Calculate improvements for each time window."""
@@ -84,16 +88,20 @@ class LintMonitor:
         self, current_time: datetime, window_delta: timedelta
     ) -> Optional[float]:
         """Calculates the improvement for a specific time window."""
-        window_start = current_time - window_delta
-        window_scores = [
-            score for timestamp, score in self.history if timestamp >= window_start
-        ]
+        window_scores = self._get_window_scores(current_time, window_delta)
 
         if len(window_scores) < 2:
             return None
 
         first, last = window_scores[0], window_scores[-1]
         return last - first
+
+    def _get_window_scores(self, current_time: datetime, window_delta: timedelta) -> list[float]:
+        """Helper function to get the scores within a time window."""
+        window_start = current_time - window_delta
+        return [
+            score for timestamp, score in self.history if timestamp >= window_start
+        ]
 
     def _create_lint_table(self, score: float, improvements: dict[str, Optional[float]]) -> Table:
         """Create a rich table for displaying lint quality."""
@@ -188,7 +196,8 @@ def add_improvement_rows(table: Table, improvements: dict[str, Optional[float]])
 
 def main() -> None:
     """Main entry point for the lint monitor."""
-    monitor = LintMonitor()
+    config = MonitorConfig()
+    monitor = LintMonitor(config)
     monitor.run()
 
 
