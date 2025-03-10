@@ -66,27 +66,31 @@ def test_calculate_improvements(lm: LintMonitor) -> None:
 
     # Test case 1: Sufficient data for all time windows
     _run_test(
-        lm,
-        [
-            (NOW - timedelta(hours=1), 6.0),
-            (NOW - timedelta(minutes=15), 7.0),
-            (NOW - timedelta(minutes=5), 8.0),
-            (NOW, 9.0),
-        ],
-        [3.0, 2.0, 3.0, None, None],
+        TestData(
+            lm=lm,
+            history=[
+                (NOW - timedelta(hours=1), 6.0),
+                (NOW - timedelta(minutes=15), 7.0),
+                (NOW - timedelta(minutes=5), 8.0),
+                (NOW, 9.0),
+            ],
+            expected_values=[3.0, 2.0, 3.0, None, None],
+        )
     )
 
     # Test case 2: Insufficient data for any time window
-    _run_test(lm, [], [None] * len(lm.TIME_WINDOWS))
+    _run_test(TestData(lm=lm, history=[], expected_values=[None] * len(lm.TIME_WINDOWS)))
 
     # Test case 3: Only one data point
-    _run_test(lm, [(NOW, 7.0)], [None] * len(lm.TIME_WINDOWS))
+    _run_test(TestData(lm=lm, history=[(NOW, 7.0)], expected_values=[None] * len(lm.TIME_WINDOWS)))
 
     # Test case 4: Data only within the shortest time window
     _run_test(
-        lm,
-        [(NOW - timedelta(minutes=4), 7.0), (NOW, 8.0)],
-        [1.0, None, None, None, None],
+        TestData(
+            lm=lm,
+            history=[(NOW - timedelta(minutes=4), 7.0), (NOW, 8.0)],
+            expected_values=[1.0, None, None, None, None],
+        )
     )
 
 
