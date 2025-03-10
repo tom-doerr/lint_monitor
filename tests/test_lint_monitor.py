@@ -41,13 +41,11 @@ def test_run_pylint_func(mocker: pytest.fixture, lm: LintMonitor) -> None:
     assert lm._LintMonitor__run_pylint() is None
 
 
-def test_extract_score_func(mocker: pytest.fixture, lm: LintMonitor) -> None:
+def test_extract_score_func(lm: LintMonitor) -> None:
     """Test the _extract_score method."""
-    assert lm._LintMonitor__extract_score("Your code has been rated at 9.50/10") == 9.5
-    assert lm._LintMonitor__extract_score("Invalid score format") is None
-    assert lm._LintMonitor__extract_score(None) is None
-
-    assert lm.get_pylint_score() is None
+    assert lm._extract_score("Your code has been rated at 9.50/10") == 9.5
+    assert lm._extract_score("Invalid score format") is None
+    assert lm._extract_score(None) is None
 
 
 def test_calculate_improvements_func(lm: LintMonitor) -> None:
@@ -100,30 +98,34 @@ def test_get_pylint_score_no_score_func(
     assert lm.get_pylint_score() is None
 
 
-def test_run_func(mocker: pytest.fixture, lm: LintMonitor) -> None:
+def test_run_func(lm: LintMonitor, mocker: pytest.fixture) -> None:
     """Test the main monitoring loop functionality."""
     lm.get_pylint_score = mocker.MagicMock(return_value=9.0)
     lm.running = False  # Stop the loop after one iteration
     mocker.patch("lint_monitor.monitor.Console")
+    mocker.patch.object(lm, '_create_lint_table')
 
     lm.run()
+    lm._create_lint_table.assert_called_once()
 
 
-def test_run_score_below_7_func(mocker: pytest.fixture, lm: LintMonitor) -> None:
+def test_run_score_below_7_func(lm: LintMonitor, mocker: pytest.fixture) -> None:
     """Test the main monitoring loop functionality with score below 7."""
     lm.get_pylint_score = mocker.MagicMock(return_value=6.0)
     lm.running = False  # Stop the loop after one iteration
     mocker.patch("lint_monitor.monitor.Console")
+    mocker.patch.object(lm, '_create_lint_table')
 
     lm.run()
+    lm._create_lint_table.assert_called_once()
 
 
-def test_run_score_between_7_and_9_func(
-    mocker: pytest.fixture, lm: LintMonitor
-) -> None:
+def test_run_score_between_7_and_9_func(lm: LintMonitor, mocker: pytest.fixture) -> None:
     """Test the main monitoring loop functionality with score between 7 and 9."""
     lm.get_pylint_score = mocker.MagicMock(return_value=8.0)
     lm.running = False  # Stop the loop after one iteration
     mocker.patch("lint_monitor.monitor.Console")
+    mocker.patch.object(lm, '_create_lint_table')
 
     lm.run()
+    lm._create_lint_table.assert_called_once()

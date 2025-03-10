@@ -66,7 +66,7 @@ class LintMonitor:
             self._console.log(f"Pylint Error: {e}")
             return None
 
-    def __extract_score(self, output: str) -> Optional[float]:
+    def _extract_score(self, output: str) -> Optional[float]:
         """Helper function to extract the score from the pylint output."""
         if not output:
             self._console.log("No pylint output to extract score from.")
@@ -101,6 +101,7 @@ class LintMonitor:
             )
             for window_name, window_delta in self.TIME_WINDOWS
         }
+        return improvements
 
     def _calculate_improvement_for_window(
         self, current_time: datetime, window_delta: timedelta
@@ -122,14 +123,14 @@ class LintMonitor:
         window_start = current_time - window_delta
         return [score for timestamp, score in self.history if timestamp >= window_start]
 
-    def _create_lint_table(self) -> Table:
+    def _create_lint_table(self, improvements: dict[str, Optional[float]]) -> Table:
         """Create a rich table for displaying lint quality."""
-        table = self.create_lint_table(self.last_score, self.calculate_improvements())
+        table = self.create_lint_table(self.last_score, improvements)
         return table
 
-    def _log_and_display(self, timestamp: datetime) -> None:
+    def _log_and_display(self, timestamp: datetime, table: Table) -> None:
         self._log_score(self.last_score, timestamp)
-        self._display_table(self._create_lint_table(), timestamp)
+        self._display_table(table, timestamp)
 
     def _log_score(self, score: float, timestamp: datetime) -> None:
         with open(LOG_FILE, "a", encoding="utf-8") as f:
@@ -172,7 +173,9 @@ class LintMonitor:
             self.last_score = score
             self.history.append((timestamp, score))
             self._trim_history()
-            self._log_and_display(timestamp)
+            improvements = self.calculate_improvements()
+            table = self._create_lint_table(improvements)
+            self._log_and_display(timestamp, table)
 
     def _trim_history(self) -> None:
         cutoff = datetime.now() - self.TIME_WINDOWS[-1][1]
