@@ -38,7 +38,9 @@ class LintMonitor:
             )
             last_line = result.stdout.strip()
             if "Your code has been rated at" in last_line:
-                score_str = last_line.split("Your code has been rated at ")[1].split("/")[0]
+                score_str = last_line.split("Your code has been rated at ")[1].split(
+                    "/"
+                )[0]
                 return float(score_str)
         except subprocess.CalledProcessError:
             return None
