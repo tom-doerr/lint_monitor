@@ -94,11 +94,10 @@ class LintMonitor:
         """Calculates the improvement for a specific time window."""
         window_scores = self._get_window_scores(current_time, window_delta)
 
-        if len(window_scores) < 2:
+        if not window_scores or len(window_scores) < 2:
             return None
 
-        first, last = window_scores[0], window_scores[-1]
-        return last - first
+        return window_scores[-1] - window_scores[0]
 
     def _get_window_scores(
         self, current_time: datetime, window_delta: timedelta
