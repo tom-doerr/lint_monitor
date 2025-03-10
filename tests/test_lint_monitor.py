@@ -21,7 +21,7 @@ def monitor():
 
 
 @patch("subprocess.run")
-def test_get_pylint_score(mock_run, monitor):
+def test_get_pylint_score(mock_run: MagicMock, monitor: LintMonitor) -> None:
     """Test the pylint score extraction functionality."""
     mock_run.return_value.stdout = "Your code has been rated at 9.50/10"
     score = monitor.get_pylint_score()
@@ -36,7 +36,7 @@ def test_get_pylint_score(mock_run, monitor):
     assert score is None
 
 
-def test_calculate_improvements(monitor):
+def test_calculate_improvements(monitor: LintMonitor) -> None:
     """Test the improvement calculation over time windows."""
     monitor.history = deque(
         [
@@ -47,8 +47,8 @@ def test_calculate_improvements(monitor):
     )
 
     improvements = monitor.calculate_improvements()
-    assert len(improvements) == len(LintMonitor.TIME_WINDOWS)
-    assert improvements["5m"] == 0.0
+    assert len(improvements) == len(TIME_WINDOWS)
+    assert improvements["5m"] == 1.0
     assert improvements["15m"] == 2.0
     assert improvements["1h"] == 2.0
     assert improvements["4h"] == 2.0
@@ -56,17 +56,17 @@ def test_calculate_improvements(monitor):
 
     monitor.history = deque()
     improvements = monitor.calculate_improvements()
-    assert len(improvements) == len(LintMonitor.TIME_WINDOWS)
+    assert len(improvements) == len(TIME_WINDOWS)
     assert all(value is None for value in improvements.values())
 
     monitor.history = deque([(NOW, 7.0)])
     improvements = monitor.calculate_improvements()
-    assert len(improvements) == len(LintMonitor.TIME_WINDOWS)
+    assert len(improvements) == len(TIME_WINDOWS)
     assert all(value is None for value in improvements.values())
 
 
 @patch("subprocess.run")
-def test_get_pylint_score_no_score(mock_run, monitor):
+def test_get_pylint_score_no_score(mock_run: MagicMock, monitor: LintMonitor) -> None:
     """Test the pylint score extraction when no score is returned."""
     mock_run.return_value.stdout = "Some other output"
     mock_run.return_value.returncode = 1  # Simulate an error
@@ -75,7 +75,7 @@ def test_get_pylint_score_no_score(mock_run, monitor):
 
 
 @patch("lint_monitor.monitor.Console")
-def test_run(mock_console, monitor):
+def test_run(mock_console: MagicMock, monitor: LintMonitor) -> None:
     """Test the main monitoring loop functionality."""
     monitor.get_pylint_score = MagicMock(return_value=9.0)
     mock_console.return_value.print.side_effect = KeyboardInterrupt()
@@ -88,7 +88,7 @@ def test_run(mock_console, monitor):
 
 
 @patch("lint_monitor.monitor.Console")
-def test_run_score_below_7(mock_console, monitor):
+def test_run_score_below_7(mock_console: MagicMock, monitor: LintMonitor) -> None:
     """Test the main monitoring loop functionality with score below 7."""
     monitor.get_pylint_score = MagicMock(return_value=6.0)
     mock_console.return_value.print.side_effect = KeyboardInterrupt()
@@ -101,7 +101,7 @@ def test_run_score_below_7(mock_console, monitor):
 
 
 @patch("lint_monitor.monitor.Console")
-def test_run_score_between_7_and_9(mock_console, monitor):
+def test_run_score_between_7_and_9(mock_console: MagicMock, monitor: LintMonitor) -> None:
     """Test the main monitoring loop functionality with score between 7 and 9."""
     monitor.get_pylint_score = MagicMock(return_value=8.0)
     mock_console.return_value.print.side_effect = KeyboardInterrupt()
