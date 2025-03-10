@@ -9,9 +9,9 @@ from rich.table import Table
 from rich.panel import Panel
 from rich.text import Text
 
-# Configuration
+
 LOG_FILE = "pylint_monitor.log"
-INTERVAL = 60  # seconds
+INTERVAL = 60
 TIME_WINDOWS = [
     ("5m", timedelta(minutes=5)),
     ("15m", timedelta(minutes=15)),

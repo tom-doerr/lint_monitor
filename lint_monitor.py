@@ -137,13 +137,3 @@ class LintMonitor:
 
         except KeyboardInterrupt:
             self.console.print("\n[bold red]Monitoring stopped.[/]")
-
-
-def main():
-    """Entry point for the lint-monitor CLI."""
-    monitor = LintMonitor()
-    monitor.run()
-
-
-if __name__ == "__main__":
-    main()
