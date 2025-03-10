@@ -1,17 +1,9 @@
-#!/usr/bin/env python3
-"""Real-time lint quality monitoring with improvement tracking."""
+"""Lint monitor package for tracking code quality improvements."""
 
-import subprocess
-import time
-from collections import deque
-from dataclasses import dataclass
-from datetime import datetime, timedelta
-from typing import Optional
+from .monitor import LintMonitor
+from .table_formatter import create_lint_table
 
-from rich.console import Console
-from rich.panel import Panel
-from rich.table import Table
-from rich.text import Text
+__all__ = ["LintMonitor", "create_lint_table"]
 
 LOG_FILE = "pylint_monitor.log"
 INTERVAL = 60

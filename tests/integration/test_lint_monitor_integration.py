@@ -12,9 +12,4 @@ def test_monitor_runs_without_errors() -> None:
     pylint_command = ["pylint"] + python_files
     config = MonitorConfig(pylint_command=pylint_command, max_iterations=1)
     monitor = LintMonitor(config)
-    try:
-        monitor.run()
-    except KeyboardInterrupt:
-        pass
-    except subprocess.CalledProcessError as e:
-        assert False, f"LintMonitor.run() raised an exception: {e}"
+    monitor.run()
