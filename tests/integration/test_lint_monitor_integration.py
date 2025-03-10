@@ -1,4 +1,3 @@
-import subprocess
 import glob
 
 from lint_monitor import LintMonitor, MonitorConfig
