@@ -115,9 +115,7 @@ def test_calculate_improvements(lm: LintMonitor) -> None:
         _run_test(test_data)
 
 
-def test_get_pylint_score_no_score(
-    mocker: pytest.fixture, lm: LintMonitor
-) -> None:
+def test_get_pylint_score_no_score(mocker: pytest.fixture, lm: LintMonitor) -> None:
     """Test the pylint score extraction when no score is returned."""
     mock_run = mocker.patch("subprocess.run")
     mock_run.return_value.stdout = "Some other output"
@@ -144,9 +142,7 @@ def test_run_score_below_7(mocker: pytest.fixture, lm: LintMonitor) -> None:
     lm.run()
 
 
-def test_run_score_between_7_and_9(
-    mocker: pytest.fixture, lm: LintMonitor
-) -> None:
+def test_run_score_between_7_and_9(mocker: pytest.fixture, lm: LintMonitor) -> None:
     """Test the main monitoring loop functionality with score between 7 and 9."""
     lm.get_pylint_score = mocker.MagicMock(return_value=8.0)
     lm.running = False  # Stop the loop after one iteration
