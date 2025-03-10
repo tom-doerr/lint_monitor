@@ -52,31 +52,24 @@ class LintMonitor:
             raise e
         return None
 
-    def _calculate_improvement_for_window(
-        self, current_time: datetime, window_delta: timedelta
-    ) -> float | None:
-        """Calculate improvement for a specific time window."""
-        window_start = current_time - window_delta
-        window_scores = [
-            score for timestamp, score in self.history if timestamp >= window_start
-        ]
-
-        if len(window_scores) < 2:
-            return None
-
-        first = window_scores[0]
-        last = window_scores[-1]
-        return last - first
-
     def calculate_improvements(self) -> dict[str, float | None]:
         """Calculate improvements for each time window."""
         current_time = datetime.now()
-        return {
-            window_name: self._calculate_improvement_for_window(
-                current_time, window_delta
-            )
-            for window_name, window_delta in TIME_WINDOWS
-        }
+        improvements = {}
+        for window_name, window_delta in self.TIME_WINDOWS:
+            window_start = current_time - window_delta
+            window_scores = [
+                score for timestamp, score in self.history if timestamp >= window_start
+            ]
+
+            if len(window_scores) < 2:
+                improvements[window_name] = None
+                continue
+
+            first = window_scores[0]
+            last = window_scores[-1]
+            improvements[window_name] = last - first
+        return improvements
 
     def _create_lint_table(
         self, score: float, improvements: dict[str, float | None]
@@ -136,7 +129,7 @@ class LintMonitor:
                     self.history.append((timestamp, score))
 
                     # Keep only last 16 hours of data
-                    cutoff = timestamp - TIME_WINDOWS[-1][1]
+                    cutoff = timestamp - self.TIME_WINDOWS[-1][1]
                     while self.history and self.history[0][0] < cutoff:
                         self.history.popleft()
 
