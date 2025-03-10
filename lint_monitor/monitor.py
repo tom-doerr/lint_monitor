@@ -30,7 +30,7 @@ class LintMonitor:
         self.last_score: float | None = None
         self.console = Console()
         self.running = True
-        self.max_iterations = float('inf') # type: ignore
+        self.max_iterations = float("inf")  # type: ignore
 
     def get_pylint_score(self) -> float | None:
         """Run pylint and extract the score."""

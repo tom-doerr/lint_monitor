@@ -48,7 +48,9 @@ class TestLintMonitor(unittest.TestCase):
 
         # Check that we get improvements for all windows
         self.assertEqual(len(improvements), 5)
-        self.assertAlmostEqual(improvements["5m"], 1.0 if len(self.monitor.history) > 1 else 0.0)
+        self.assertAlmostEqual(
+            improvements["5m"], 1.0 if len(self.monitor.history) > 1 else 0.0
+        )
         self.assertAlmostEqual(improvements["15m"], 2.0)
         self.assertAlmostEqual(improvements["1h"], 2.0)
         self.assertAlmostEqual(improvements["4h"], 2.0)
