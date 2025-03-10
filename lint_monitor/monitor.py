@@ -55,8 +55,8 @@ class LintMonitor:
     def calculate_improvements(self) -> dict[str, float | None]:
         """Calculate improvements for each time window."""
         current_time = datetime.now()
-        improvements = {}
-        for window_name, window_delta in self.TIME_WINDOWS:
+        improvements: dict[str, float | None] = {}
+        for window_name, window_delta in TIME_WINDOWS:
             window_start = current_time - window_delta
             window_scores = [
                 score for timestamp, score in self.history if timestamp >= window_start
@@ -129,11 +129,11 @@ class LintMonitor:
                     self.history.append((timestamp, score))
 
                     # Keep only last 16 hours of data
-                    cutoff = timestamp - self.TIME_WINDOWS[-1][1]
+                    cutoff = timestamp - TIME_WINDOWS[-1][1]
                     while self.history and self.history[0][0] < cutoff:
                         self.history.popleft()
 
-                    improvements = self.calculate_improvements()
+                    improvements:  dict[str, float | None] = self.calculate_improvements()
                     table = self._create_lint_table(score, improvements)
                     self._log_and_display(score, table, timestamp)
 

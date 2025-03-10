@@ -83,7 +83,7 @@ class TestLintMonitor(unittest.TestCase):
 
     def _run_monitor_test(
         self, mock_console, mock_score, expected_score: float
-    ):
+    ) -> None:
         """Helper function to run monitor tests."""
         mock_score.return_value = expected_score
         mock_console.return_value.print.side_effect = KeyboardInterrupt()
@@ -100,19 +100,19 @@ class TestLintMonitor(unittest.TestCase):
 
     @patch("lint_monitor.monitor.LintMonitor.get_pylint_score")
     @patch("lint_monitor.monitor.Console")
-    def test_run(self, mock_console, mock_score):
+    def test_run(self, mock_console, mock_score) -> None:
         """Test the main monitoring loop functionality."""
         self._run_monitor_test(mock_console, mock_score, 9.0)
 
     @patch("lint_monitor.monitor.LintMonitor.get_pylint_score")
     @patch("lint_monitor.monitor.Console")
-    def test_run_score_below_7(self, mock_console, mock_score):
+    def test_run_score_below_7(self, mock_console, mock_score) -> None:
         """Test the main monitoring loop functionality with score below 7."""
         self._run_monitor_test(mock_console, mock_score, 6.0)
 
     @patch("lint_monitor.monitor.LintMonitor.get_pylint_score")
     @patch("lint_monitor.monitor.Console")
-    def test_run_score_between_7_and_9(self, mock_console, mock_score):
+    def test_run_score_between_7_and_9(self, mock_console, mock_score) -> None:
         """Test the main monitoring loop functionality with score between 7 and 9."""
         self._run_monitor_test(mock_console, mock_score, 8.0)
 
