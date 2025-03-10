@@ -44,6 +44,7 @@ class LintMonitor:
             return None
         except ValueError as e:
             raise e
+        return None
 
     def calculate_improvements(self) -> dict[str, float | None]:
         """Calculate improvements for each time window"""

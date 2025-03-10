@@ -58,8 +58,8 @@ class TestLintMonitor(unittest.TestCase):
         self.monitor.history = deque()
         improvements = self.monitor.calculate_improvements()
         self.assertEqual(len(improvements), 5)
-        for window in improvements:
-            self.assertIsNone(improvements[window])
+        for window, value in improvements.items():
+            self.assertIsNone(value)
 
     @patch("lint_monitor.monitor.LintMonitor.get_pylint_score")
     @patch("lint_monitor.monitor.Console")
