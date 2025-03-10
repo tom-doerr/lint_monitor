@@ -216,7 +216,9 @@ def main() -> None:
     else:
         pylint_command = args.pylint_command
 
-    config = MonitorConfig(pylint_command=pylint_command, max_iterations=args.max_iterations)
+    config = MonitorConfig(
+        pylint_command=pylint_command, max_iterations=args.max_iterations
+    )
     monitor = LintMonitor(config)
     monitor.run()
 
