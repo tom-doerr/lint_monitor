@@ -1,5 +1,7 @@
 """Module for formatting lint quality data into a rich table."""
 
+"""Module for formatting lint quality data into a rich table."""
+
 from typing import Optional
 
 from rich.table import Table
@@ -18,17 +20,12 @@ def add_score_row(table: Table, score: float) -> None:
     table.add_row("Current Score", Text(f"{score:.2f}/10", style=score_style))
 
 
-def add_improvement_rows(
-    table: Table, improvements: dict[str, Optional[float]]
-) -> None:
+def add_improvement_rows(table: Table, improvements: dict[str, Optional[float]]) -> None:
     """Adds rows for the improvement values."""
     for window, improvement in improvements.items():
         if improvement is not None:
             imp_style = "green" if improvement > 0 else "red"
-            table.add_row(
-                f"Improvement ({window})",
-                Text(f"{improvement:+.2f}", style=imp_style),
-            )
+            table.add_row(f"Improvement ({window})", Text(f"{improvement:+.2f}", style=imp_style))
 
 
 def create_lint_table(score: float, improvements: dict[str, Optional[float]]) -> Table:

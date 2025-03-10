@@ -2,6 +2,7 @@
 """Entry point for the lint-monitor CLI."""
 
 import argparse
+import subprocess
 from lint_monitor.monitor import LintMonitor, MonitorConfig
 
 
@@ -25,4 +26,3 @@ def main() -> None:
         pylint_command = args.pylint_command
 
     config = MonitorConfig(pylint_command=pylint_command)
-    monitor = LintMonitor(config)
