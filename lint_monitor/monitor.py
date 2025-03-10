@@ -1,3 +1,4 @@
+"""Real-time lint quality monitoring with improvement tracking."""
 import subprocess
 import time
 from datetime import datetime, timedelta
@@ -19,6 +20,7 @@ TIME_WINDOWS = [
 ]
 
 class LintMonitor:
+    """Monitor and track lint quality improvements over time."""
     def __init__(self):
         self.history = deque()
         self.last_score = None
@@ -83,7 +85,11 @@ class LintMonitor:
                     improvements = self.calculate_improvements()
 
                     # Create rich table for display
-                    table = Table(title="Lint Quality Monitor", show_header=True, header_style="bold magenta")
+                    table = Table(
+                        title="Lint Quality Monitor",
+                        show_header=True,
+                        header_style="bold magenta"
+                    )
                     table.add_column("Metric", style="cyan")
                     table.add_column("Value", justify="right")
                     
