@@ -33,11 +33,11 @@ def test_get_pylint_score(mocker: pytest.fixture, lm: LintMonitor) -> None:
     assert lm.get_pylint_score() is None
 
 
-def _run_test(
-    lm: LintMonitor, history: list[tuple[datetime, float]], expected_values: list[float | None]
+def _assert_improvements(
+    improvements: dict[str, Optional[float]],
+    expected_values: list[float | None],
+    lm: LintMonitor,
 ) -> None:
-    lm.history = deque(history)
-    improvements = lm.calculate_improvements()
     assert len(improvements) == len(lm.TIME_WINDOWS)
     for i, window in enumerate(lm.TIME_WINDOWS):
         expected = expected_values[i]
@@ -46,6 +46,16 @@ def _run_test(
             assert actual is None
         else:
             assert actual == pytest.approx(expected)
+
+
+def _run_test(
+    lm: LintMonitor,
+    history: list[tuple[datetime, float]],
+    expected_values: list[float | None],
+) -> None:
+    lm.history = deque(history)
+    improvements = lm.calculate_improvements()
+    _assert_improvements(improvements, expected_values, lm)
 
 
 def test_calculate_improvements(lm: LintMonitor) -> None:
