@@ -120,7 +120,7 @@ class LintMonitor:
         self, score: float, improvements: dict[str, Optional[float]]
     ) -> Table:
         """Create a rich table for displaying lint quality."""
-        table = create_lint_table(score, improvements)
+        table = self.create_lint_table(score, improvements)
         return table
 
     def _log_and_display(self, score: float, table: Table, timestamp: datetime) -> None:
@@ -185,37 +185,3 @@ class LintMonitor:
             self.history.popleft()
 
 
-def create_lint_table(score: float, improvements: dict[str, Optional[float]]) -> Table:
-    """Create a rich table for displaying lint quality."""
-    table = Table(
-        title="Lint Quality Monitor",
-        show_header=True,
-        header_style="bold magenta",
-    )
-    add_table_columns(table)
-    add_score_row(table, score)
-    add_improvement_rows(table, improvements)
-    return table
-
-
-def add_table_columns(table: Table) -> None:
-    """Adds columns to the table."""
-    table.add_column("Metric", style="cyan")
-    table.add_column("Value", justify="right")
-
-
-def add_score_row(table: Table, score: float) -> None:
-    score_style = "green" if score >= 9.0 else "yellow" if score >= 7.0 else "red"
-    table.add_row("Current Score", Text(f"{score:.2f}/10", style=score_style))
-
-
-def add_improvement_rows(
-    table: Table, improvements: dict[str, Optional[float]]
-) -> None:
-    for window, improvement in improvements.items():
-        if improvement is not None:
-            imp_style = "green" if improvement > 0 else "red"
-            table.add_row(
-                f"Improvement ({window})",
-                Text(f"{improvement:+.2f}", style=imp_style),
-            )
