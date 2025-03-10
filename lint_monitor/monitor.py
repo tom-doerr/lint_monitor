@@ -57,7 +57,7 @@ class LintMonitor:
         except subprocess.CalledProcessError:
             return None
 
-    def _run_pylint(self) -> Optional[str]:
+    def __run_pylint(self) -> Optional[str]:
         """Helper function to run pylint and return the last line of output."""
         try:
             result = subprocess.run(
@@ -70,7 +70,7 @@ class LintMonitor:
             self._console.log(f"Pylint Error: {e}")
             return None
 
-    def _extract_score(self, output: str) -> Optional[float]:
+    def __extract_score(self, output: str) -> Optional[float]:
         """Helper function to extract the score from the pylint output."""
         if not output:
             self._console.log("No pylint output to extract score from.")
