@@ -26,12 +26,14 @@ class LintMonitor:
     """Monitor and track lint quality improvements over time."""
 
     def __init__(self):
-        self.history = deque()
-        self.last_score = None
+        self.history: deque[tuple[datetime, float]] = deque()
+        self.last_score: float | None = None
         self.console = Console()
+        self.running = True
+        self.MAX_ITERATIONS = float('inf') # type: ignore
 
     def get_pylint_score(self) -> float | None:
-        """Run pylint and extract the score"""
+        """Run pylint and extract the score."""
         try:
             result = subprocess.run(
                 ["pylint", "evoprompt/**py"], capture_output=True, text=True, check=True
@@ -42,6 +44,8 @@ class LintMonitor:
                     "/"
                 )[0]
                 return float(score_str)
+            else:
+                return None
         except subprocess.CalledProcessError:
             return None
         except ValueError as e:
@@ -70,7 +74,7 @@ class LintMonitor:
         return improvements
 
     def run(self):
-        """Main monitoring loop"""
+        """Main monitoring loop."""
         self.console.print(
             Panel(
                 f"Starting lint monitor. Logging to [bold cyan]{LOG_FILE}[/]\n"
@@ -80,8 +84,9 @@ class LintMonitor:
             )
         )
 
+        iteration = 0
         try:
-            while True:
+            while self.running and iteration < self.MAX_ITERATIONS:
                 score = self.get_pylint_score()
                 if score is not None:
                     timestamp = datetime.now()
@@ -136,7 +141,8 @@ class LintMonitor:
                     self.console.clear()
                     self.console.print(panel)
 
-                time.sleep(INTERVAL)
+                time.sleep(self.INTERVAL)
+                iteration += 1
 
         except KeyboardInterrupt:
             self.console.print("\n[bold red]Monitoring stopped.[/]")
