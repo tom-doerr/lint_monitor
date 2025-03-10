@@ -1,6 +1,18 @@
 """Lint monitor package for tracking code quality improvements."""
 
 from .monitor import LintMonitor
+import subprocess
+import time
+from collections import deque
+from dataclasses import dataclass
+from datetime import datetime, timedelta
+from typing import Optional
+
+from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
+
+from .monitor import LintMonitor
 from .table_formatter import create_lint_table
 
 __all__ = ["LintMonitor", "create_lint_table"]

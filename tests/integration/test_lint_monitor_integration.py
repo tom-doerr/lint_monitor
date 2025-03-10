@@ -1,7 +1,7 @@
 import subprocess
 import glob
 
-from lint_monitor.monitor import LintMonitor, MonitorConfig
+from lint_monitor import LintMonitor, MonitorConfig
 
 
 def test_monitor_runs_without_errors() -> None:
