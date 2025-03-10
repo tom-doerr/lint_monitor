@@ -12,6 +12,6 @@ def test_monitor_runs_without_errors() -> None:
     try:
         monitor.run()
     except KeyboardInterrupt:
-        pass  # Allow KeyboardInterrupt to exit gracefully
+        pass
     except subprocess.CalledProcessError as e:
         assert False, f"LintMonitor.run() raised an exception: {e}"

@@ -69,11 +69,13 @@ class LintMonitor:
         """Helper function to extract the score from the pylint output."""
         if not last_line or "Your code has been rated at" not in last_line:
             return None
+
         try:
             score_str = last_line.split("Your code has been rated at ")[1].split("/")[0]
-            return float(score_str)
+            score = float(score_str)
         except (IndexError, ValueError):
             return None
+        return score
 
     def calculate_improvements(self) -> dict[str, Optional[float]]:
         """Calculate improvements for each time window."""
@@ -141,7 +143,7 @@ class LintMonitor:
 
         iteration = 0
         try:
-            while self.running and iteration < self.max_iterations:
+            while self.running and iteration < self.config.max_iterations:
                 self._process_iteration()
                 iteration += 1
                 time.sleep(INTERVAL)
@@ -188,19 +190,8 @@ def add_score_row(table: Table, score: float) -> None:
     table.add_row("Current Score", Text(f"{score:.2f}/10", style=score_style))
 
 
-def add_improvement_rows(
-    table: Table, improvements: dict[str, Optional[float]]
-) -> None:
-    for window, improvement in improvements.items():
-        if improvement is not None:
-            imp_style = "green" if improvement > 0 else "red"
-            table.add_row(
-                f"Improvement ({window})",
-                Text(f"{improvement:+.2f}", style=imp_style),
-            )
-
-
 def main() -> None:
+    """Main entry point for the lint monitor."""
     """Main entry point for the lint monitor."""
     config = MonitorConfig()
     monitor = LintMonitor(config)

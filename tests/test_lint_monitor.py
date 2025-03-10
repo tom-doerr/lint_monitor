@@ -50,21 +50,40 @@ def test_calculate_improvements() -> None:
     ):
         monitor.history = deque(history)
         improvements = monitor.calculate_improvements()
-        assert len(improvements) == len(LintMonitor.TIME_WINDOWS)
-        for i, window in enumerate(LintMonitor.TIME_WINDOWS):
-            assert improvements[window[0]] == expected_values[i]
+        assert len(improvements) == len(monitor.TIME_WINDOWS)
+        for i, window in enumerate(monitor.TIME_WINDOWS):
+            expected = expected_values[i]
+            actual = improvements[window[0]]
+            if expected is None:
+                assert actual is None
+            else:
+                assert actual == pytest.approx(expected)
 
+    # Test case 1: Sufficient data for all time windows
     run_test(
         [
-            (NOW - timedelta(minutes=10), 7.0),
+            (NOW - timedelta(hours=1), 6.0),
+            (NOW - timedelta(minutes=15), 7.0),
             (NOW - timedelta(minutes=5), 8.0),
             (NOW, 9.0),
         ],
-        [1.0, 2.0, 2.0, 2.0, 2.0],
+        [3.0, 2.0, 3.0, None, None],
     )
 
-    run_test([], [None] * len(LintMonitor.TIME_WINDOWS))
-    run_test([(NOW, 7.0)], [None] * len(LintMonitor.TIME_WINDOWS))
+    # Test case 2: Insufficient data for any time window
+    run_test([], [None] * len(monitor.TIME_WINDOWS))
+
+    # Test case 3: Only one data point
+    run_test([(NOW, 7.0)], [None] * len(monitor.TIME_WINDOWS))
+
+    # Test case 4: Data only within the shortest time window
+    run_test(
+        [
+            (NOW - timedelta(minutes=4), 7.0),
+            (NOW, 8.0),
+        ],
+        [1.0, None, None, None, None],
+    )
 
 
 @patch("subprocess.run")
