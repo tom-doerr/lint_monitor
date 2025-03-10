@@ -30,7 +30,7 @@ class LintMonitor:
         self.last_score: float | None = None
         self.console = Console()
         self.running = True
-        self.MAX_ITERATIONS = float('inf') # type: ignore
+        self.max_iterations = float('inf') # type: ignore
 
     def get_pylint_score(self) -> float | None:
         """Run pylint and extract the score."""
@@ -44,8 +44,6 @@ class LintMonitor:
                     "/"
                 )[0]
                 return float(score_str)
-            else:
-                return None
         except subprocess.CalledProcessError:
             return None
         except ValueError as e:
@@ -86,7 +84,7 @@ class LintMonitor:
 
         iteration = 0
         try:
-            while self.running and iteration < self.MAX_ITERATIONS:
+            while self.running and iteration < self.max_iterations:
                 score = self.get_pylint_score()
                 if score is not None:
                     timestamp = datetime.now()
@@ -141,7 +139,7 @@ class LintMonitor:
                     self.console.clear()
                     self.console.print(panel)
 
-                time.sleep(self.INTERVAL)
+                time.sleep(INTERVAL)
                 iteration += 1
 
         except KeyboardInterrupt:
