@@ -53,7 +53,9 @@ def test_extract_score_func(mocker: pytest.fixture, lm: LintMonitor) -> None:
 def test_calculate_improvements_func(lm: LintMonitor) -> None:
     """Test the improvement calculation over time windows."""
 
-    def _assert_improvements(improvements: dict[str, Optional[float]], expected_values: list[float | None]) -> None:
+    def _assert_improvements(
+        improvements: dict[str, Optional[float]], expected_values: list[float | None]
+    ) -> None:
         assert len(improvements) == len(lm.TIME_WINDOWS)
         for i, window in enumerate(lm.TIME_WINDOWS):
             expected = expected_values[i]
@@ -64,10 +66,21 @@ def test_calculate_improvements_func(lm: LintMonitor) -> None:
                 assert actual == pytest.approx(expected)
 
     test_cases = [
-        ([(NOW - timedelta(hours=1), 6.0), (NOW - timedelta(minutes=15), 7.0), (NOW - timedelta(minutes=5), 8.0), (NOW, 9.0)], [3.0, 2.0, 3.0, None, None]),
+        (
+            [
+                (NOW - timedelta(hours=1), 6.0),
+                (NOW - timedelta(minutes=15), 7.0),
+                (NOW - timedelta(minutes=5), 8.0),
+                (NOW, 9.0),
+            ],
+            [3.0, 2.0, 3.0, None, None],
+        ),
         ([], [None] * len(lm.TIME_WINDOWS)),
         ([(NOW, 7.0)], [None] * len(lm.TIME_WINDOWS)),
-        ([(NOW - timedelta(minutes=4), 7.0), (NOW, 8.0)], [1.0, None, None, None, None]),
+        (
+            [(NOW - timedelta(minutes=4), 7.0), (NOW, 8.0)],
+            [1.0, None, None, None, None],
+        ),
     ]
 
     for history, expected_values in test_cases:
@@ -76,7 +89,9 @@ def test_calculate_improvements_func(lm: LintMonitor) -> None:
         _assert_improvements(improvements, expected_values)
 
 
-def test_get_pylint_score_no_score_func(mocker: pytest.fixture, lm: LintMonitor) -> None:
+def test_get_pylint_score_no_score_func(
+    mocker: pytest.fixture, lm: LintMonitor
+) -> None:
     """Test the pylint score extraction when no score is returned."""
     mock_run = mocker.patch("subprocess.run")
     mock_run.return_value.stdout = "Some other output"
@@ -103,7 +118,9 @@ def test_run_score_below_7_func(mocker: pytest.fixture, lm: LintMonitor) -> None
     lm.run()
 
 
-def test_run_score_between_7_and_9_func(mocker: pytest.fixture, lm: LintMonitor) -> None:
+def test_run_score_between_7_and_9_func(
+    mocker: pytest.fixture, lm: LintMonitor
+) -> None:
     """Test the main monitoring loop functionality with score between 7 and 9."""
     lm.get_pylint_score = mocker.MagicMock(return_value=8.0)
     lm.running = False  # Stop the loop after one iteration
