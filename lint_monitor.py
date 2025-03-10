@@ -26,6 +26,7 @@ TIME_WINDOWS = [
 
 class LintMonitor:
     """Monitor and track lint quality improvements over time."""
+
     def __init__(self):
         self.history = deque()
         self.last_score = None
@@ -67,12 +68,14 @@ class LintMonitor:
 
     def run(self):
         """Main monitoring loop"""
-        self.console.print(Panel(
-            f"Starting lint monitor. Logging to [bold cyan]{LOG_FILE}[/]\n"
-            "Press [bold red]Ctrl+C[/] to stop...",
-            title="Lint Monitor",
-            border_style="green"
-        ))
+        self.console.print(
+            Panel(
+                f"Starting lint monitor. Logging to [bold cyan]{LOG_FILE}[/]\n"
+                "Press [bold red]Ctrl+C[/] to stop...",
+                title="Lint Monitor",
+                border_style="green",
+            )
+        )
 
         try:
             while True:
@@ -93,35 +96,39 @@ class LintMonitor:
                     table = Table(
                         title="Lint Quality Monitor",
                         show_header=True,
-                        header_style="bold magenta"
+                        header_style="bold magenta",
                     )
                     table.add_column("Metric", style="cyan")
                     table.add_column("Value", justify="right")
-                    
+
                     # Add current score
-                    score_style = "green" if score >= 9.0 else "yellow" if score >= 7.0 else "red"
-                    table.add_row("Current Score", Text(f"{score:.2f}/10", style=score_style))
-                    
+                    score_style = (
+                        "green" if score >= 9.0 else "yellow" if score >= 7.0 else "red"
+                    )
+                    table.add_row(
+                        "Current Score", Text(f"{score:.2f}/10", style=score_style)
+                    )
+
                     # Add improvements
                     for window, improvement in improvements.items():
                         if improvement is not None:
                             imp_style = "green" if improvement > 0 else "red"
                             table.add_row(
-                                f"Improvement ({window})", 
-                                Text(f"{improvement:+.2f}", style=imp_style)
+                                f"Improvement ({window})",
+                                Text(f"{improvement:+.2f}", style=imp_style),
                             )
-                    
+
                     # Create panel with timestamp
                     panel = Panel(
                         table,
                         title=f"Lint Quality at {timestamp.strftime('%Y-%m-%d %H:%M:%S')}",
-                        border_style="blue"
+                        border_style="blue",
                     )
-                    
+
                     # Log to file
                     with open(LOG_FILE, "a", encoding="utf-8") as f:
                         f.write(f"{timestamp.isoformat()} - Current: {score:.2f}/10\n")
-                    
+
                     # Clear console and display new output
                     self.console.clear()
                     self.console.print(panel)
@@ -136,6 +143,7 @@ def main():
     """Entry point for the lint-monitor CLI."""
     monitor = LintMonitor()
     monitor.run()
+
 
 if __name__ == "__main__":
     main()
