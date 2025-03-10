@@ -27,9 +27,14 @@ class TestLintMonitor(unittest.TestCase):
         score = self.monitor.get_pylint_score()
         self.assertIsNone(score)
 
+        # Test invalid score format
+        mock_run.return_value.stdout = "Invalid score format"
+        score = self.monitor.get_pylint_score()
+        self.assertIsNone(score)
+
     def test_calculate_improvements(self):
         """Test the improvement calculation over time windows."""
-        # Setup test data
+        # Set up test data
         now = datetime.now()
         self.monitor.history = deque(
             [

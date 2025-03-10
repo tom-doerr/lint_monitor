@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Real-time lint quality monitoring with improvement tracking."""
 
 import subprocess
@@ -29,22 +30,24 @@ class LintMonitor:
         self.last_score = None
         self.console = Console()
 
-    def get_pylint_score(self):
+    def get_pylint_score(self) -> float | None:
         """Run pylint and extract the score"""
         try:
             result = subprocess.run(
                 ["pylint", "evoprompt/**py"], capture_output=True, text=True, check=True
             )
-            last_line = result.stdout.strip().split("\n")[-1]
-            if "rated at" in last_line:
-                return float(last_line.split("rated at ")[1].split("/")[0])
-        except (subprocess.CalledProcessError, ValueError):
+            last_line = result.stdout.strip()
+            if "Your code has been rated at" in last_line:
+                score_str = last_line.split("Your code has been rated at ")[1].split("/")[0]
+                return float(score_str)
+        except subprocess.CalledProcessError:
             return None
-        return None
+        except ValueError as e:
+            raise e
 
-    def calculate_improvements(self):
+    def calculate_improvements(self) -> dict[str, float | None]:
         """Calculate improvements for each time window"""
-        improvements = {}
+        improvements: dict[str, float | None] = {}
         current_time = datetime.now()
 
         for window_name, window_delta in TIME_WINDOWS:
