@@ -83,7 +83,10 @@ def test_run(mock_console: MagicMock, monitor: LintMonitor) -> None:
     with pytest.raises(KeyboardInterrupt):
         monitor.run()
 
-    assert mock_console.return_value.print.call_args[0][0] == "\n[bold red]Monitoring stopped.[/]"
+    assert (
+        mock_console.return_value.print.call_args[0][0]
+        == "\n[bold red]Monitoring stopped.[/]"
+    )
     assert monitor.running is False
 
 
@@ -96,12 +99,17 @@ def test_run_score_below_7(mock_console: MagicMock, monitor: LintMonitor) -> Non
     with pytest.raises(KeyboardInterrupt):
         monitor.run()
 
-    assert mock_console.return_value.print.call_args[0][0] == "\n[bold red]Monitoring stopped.[/]"
+    assert (
+        mock_console.return_value.print.call_args[0][0]
+        == "\n[bold red]Monitoring stopped.[/]"
+    )
     assert monitor.running is False
 
 
 @patch("lint_monitor.monitor.Console")
-def test_run_score_between_7_and_9(mock_console: MagicMock, monitor: LintMonitor) -> None:
+def test_run_score_between_7_and_9(
+    mock_console: MagicMock, monitor: LintMonitor
+) -> None:
     """Test the main monitoring loop functionality with score between 7 and 9."""
     monitor.get_pylint_score = MagicMock(return_value=8.0)
     mock_console.return_value.print.side_effect = KeyboardInterrupt()
@@ -109,5 +117,8 @@ def test_run_score_between_7_and_9(mock_console: MagicMock, monitor: LintMonitor
     with pytest.raises(KeyboardInterrupt):
         monitor.run()
 
-    assert mock_console.return_value.print.call_args[0][0] == "\n[bold red]Monitoring stopped.[/]"
+    assert (
+        mock_console.return_value.print.call_args[0][0]
+        == "\n[bold red]Monitoring stopped.[/]"
+    )
     assert monitor.running is False
