@@ -38,8 +38,8 @@ def test_calculate_improvements() -> None:
     ):
         monitor.history = deque(history)
         improvements = monitor.calculate_improvements()
-        assert len(improvements) == len(monitor.TIME_WINDOWS)
-        for i, window in enumerate(monitor.TIME_WINDOWS):
+        assert len(improvements) == len(LintMonitor.TIME_WINDOWS)
+        for i, window in enumerate(LintMonitor.TIME_WINDOWS):
             assert improvements[window[0]] == expected_values[i]
 
     run_test(
@@ -48,7 +48,7 @@ def test_calculate_improvements() -> None:
             (NOW - timedelta(minutes=5), 8.0),
             (NOW, 9.0),
         ],
-        [1.0, 2.0, 2.0, 2.0, 2.0],
+        [1.0, 2.0, 2.0, 2.0, 2.0]
     )
 
     run_test([], [None] * len(LintMonitor.TIME_WINDOWS))
