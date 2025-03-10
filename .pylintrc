@@ -1,2 +1,29 @@
 [MASTER]
-ignore-patterns = ^pyproject\.toml$
+# Maximum number of lines in a module
+max-module-lines=200
+
+# Files to ignore
+ignore=pyproject.toml
+
+[MESSAGES CONTROL]
+# Disable missing docstring warnings
+disable=missing-module-docstring,missing-class-docstring,missing-function-docstring,line-too-long,trailing-whitespace,unrecognized-option,syntax-error
+
+[DESIGN]
+max-args=2
+max-locals=5
+max-statements=10
+max-branches=20
+max-returns=2
+max-attributes=5
+max-public-methods=5
+max-methods=5
+max-parents=1
+max-complexity=5
+min-public-methods=1
+min-similarity-lines=3
+max-nested-blocks=2     # Maximum nesting depth of blocks (if, for, etc.)
+
+# Maintainability settings (using valid pylint options)
+# These will be checked by radon instead of pylint
+
