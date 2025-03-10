@@ -20,5 +20,3 @@ def main() -> None:
 
     config = MonitorConfig(pylint_command=args.pylint_command)
     monitor = LintMonitor(config)
-
-

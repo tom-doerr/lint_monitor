@@ -219,5 +219,3 @@ def add_improvement_rows(
                 f"Improvement ({window})",
                 Text(f"{improvement:+.2f}", style=imp_style),
             )
-
-
