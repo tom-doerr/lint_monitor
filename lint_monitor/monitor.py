@@ -51,25 +51,55 @@ class LintMonitor:
         return None
 
     def calculate_improvements(self) -> dict[str, float | None]:
-        """Calculate improvements for each time window"""
-        improvements: dict[str, float | None] = {}
+        """Calculate improvements for each time window."""
         current_time = datetime.now()
+        improvements: dict[str, float | None] = {}
 
         for window_name, window_delta in TIME_WINDOWS:
-            window_start = current_time - window_delta
-            window_scores = [
-                score for timestamp, score in self.history if timestamp >= window_start
-            ]
-
-            if window_scores:
-                first = window_scores[0]
-                last = window_scores[-1]
-                improvement = last - first
-                improvements[window_name] = improvement
-            else:
-                improvements[window_name] = None
+            improvement = self._calculate_improvement_for_window(
+                current_time, window_delta
+            )
+            improvements[window_name] = improvement
 
         return improvements
+
+    def _calculate_improvement_for_window(
+        self, current_time: datetime, window_delta: timedelta
+    ) -> float | None:
+        """Calculate improvement for a specific time window."""
+        window_start = current_time - window_delta
+        window_scores = [
+            score for timestamp, score in self.history if timestamp >= window_start
+        ]
+
+        if not window_scores or len(window_scores) < 2:
+            return None
+
+        first = window_scores[0]
+        last = window_scores[-1]
+        return last - first
+
+    def _create_lint_table(self, score: float, improvements: dict[str, float | None]) -> Table:
+        """Create a rich table for displaying lint quality."""
+        table = Table(
+            title="Lint Quality Monitor",
+            show_header=True,
+            header_style="bold magenta",
+        )
+        table.add_column("Metric", style="cyan")
+        table.add_column("Value", justify="right")
+
+        score_style = "green" if score >= 9.0 else "yellow" if score >= 7.0 else "red"
+        table.add_row("Current Score", Text(f"{score:.2f}/10", style=score_style))
+
+        for window, improvement in improvements.items():
+            if improvement is not None:
+                imp_style = "green" if improvement > 0 else "red"
+                table.add_row(
+                    f"Improvement ({window})",
+                    Text(f"{improvement:+.2f}", style=imp_style),
+                )
+        return table
 
     def run(self):
         """Main monitoring loop."""
@@ -95,47 +125,17 @@ class LintMonitor:
                     while self.history and self.history[0][0] < cutoff:
                         self.history.popleft()
 
-                    # Calculate improvements
                     improvements = self.calculate_improvements()
-
-                    # Create rich table for display
-                    table = Table(
-                        title="Lint Quality Monitor",
-                        show_header=True,
-                        header_style="bold magenta",
-                    )
-                    table.add_column("Metric", style="cyan")
-                    table.add_column("Value", justify="right")
-
-                    # Add current score
-                    score_style = (
-                        "green" if score >= 9.0 else "yellow" if score >= 7.0 else "red"
-                    )
-                    table.add_row(
-                        "Current Score", Text(f"{score:.2f}/10", style=score_style)
-                    )
-
-                    # Add improvements
-                    for window, improvement in improvements.items():
-                        if improvement is not None:
-                            imp_style = "green" if improvement > 0 else "red"
-                            table.add_row(
-                                f"Improvement ({window})",
-                                Text(f"{improvement:+.2f}", style=imp_style),
-                            )
-
-                    # Create panel with timestamp
+                    table = self._create_lint_table(score, improvements)
                     panel = Panel(
                         table,
                         title=f"Lint Quality at {timestamp.strftime('%Y-%m-%d %H:%M:%S')}",
                         border_style="blue",
                     )
 
-                    # Log to file
                     with open(LOG_FILE, "a", encoding="utf-8") as f:
                         f.write(f"{timestamp.isoformat()} - Current: {score:.2f}/10\n")
 
-                    # Clear console and display new output
                     self.console.clear()
                     self.console.print(panel)
 

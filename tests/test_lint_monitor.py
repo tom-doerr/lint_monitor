@@ -128,6 +128,41 @@ class TestLintMonitor(unittest.TestCase):
         score = self.monitor.get_pylint_score()
         self.assertIsNone(score)
 
+    def _run_monitor_test(self, mock_console, mock_score, expected_score):
+        """Helper function to run monitor tests."""
+        mock_score.return_value = expected_score
+        mock_console.return_value.print.side_effect = KeyboardInterrupt()
+        self.monitor.INTERVAL = 0.1  # Shorten interval for testing
+        self.monitor.MAX_ITERATIONS = 5  # Limit iterations
+
+        try:
+            self.monitor.run()
+        except KeyboardInterrupt:
+            pass  # Expect KeyboardInterrupt during test
+        finally:
+            self.monitor.running = False  # Ensure loop stops
+        mock_console.return_value.print.assert_called_with(
+            "\n[bold red]Monitoring stopped.[/]"
+        )
+
+    @patch("lint_monitor.monitor.LintMonitor.get_pylint_score")
+    @patch("lint_monitor.monitor.Console")
+    def test_run(self, mock_console, mock_score):
+        """Test the main monitoring loop functionality."""
+        self._run_monitor_test(mock_console, mock_score, 9.0)
+
+    @patch("lint_monitor.monitor.LintMonitor.get_pylint_score")
+    @patch("lint_monitor.monitor.Console")
+    def test_run_score_below_7(self, mock_console, mock_score):
+        """Test the main monitoring loop functionality with score below 7."""
+        self._run_monitor_test(mock_console, mock_score, 6.0)
+
+    @patch("lint_monitor.monitor.LintMonitor.get_pylint_score")
+    @patch("lint_monitor.monitor.Console")
+    def test_run_score_between_7_and_9(self, mock_console, mock_score):
+        """Test the main monitoring loop functionality with score between 7 and 9."""
+        self._run_monitor_test(mock_console, mock_score, 8.0)
+
 
 if __name__ == "__main__":
     unittest.main()
