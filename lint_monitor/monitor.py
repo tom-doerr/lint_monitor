@@ -221,5 +221,3 @@ def main() -> None:
     config = MonitorConfig()
     monitor = LintMonitor(config)
     monitor.run()
-
-
