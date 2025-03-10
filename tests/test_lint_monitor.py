@@ -32,8 +32,10 @@ def test_get_pylint_score(mock_run: MagicMock) -> None:
 def test_calculate_improvements() -> None:
     """Test the improvement calculation over time windows."""
     monitor = LintMonitor(pylint_command=["pylint", "evoprompt/**py"])
-    
-    def run_test(history: list[tuple[datetime, float]], expected_values: list[float | None]):
+
+    def run_test(
+        history: list[tuple[datetime, float]], expected_values: list[float | None]
+    ):
         monitor.history = deque(history)
         improvements = monitor.calculate_improvements()
         assert len(improvements) == len(LintMonitor.TIME_WINDOWS)
@@ -41,10 +43,12 @@ def test_calculate_improvements() -> None:
             assert improvements[window[0]] == expected_values[i]
 
     run_test(
-        [(NOW - timedelta(minutes=10), 7.0),
-         (NOW - timedelta(minutes=5), 8.0),
-         (NOW, 9.0)],
-        [1.0, 2.0, 2.0, 2.0, 2.0]
+        [
+            (NOW - timedelta(minutes=10), 7.0),
+            (NOW - timedelta(minutes=5), 8.0),
+            (NOW, 9.0),
+        ],
+        [1.0, 2.0, 2.0, 2.0, 2.0],
     )
 
     run_test([], [None] * len(LintMonitor.TIME_WINDOWS))
