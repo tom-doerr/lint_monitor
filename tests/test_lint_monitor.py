@@ -19,39 +19,41 @@ def lint_monitor() -> LintMonitor:
 NOW = datetime.now()  # Store current datetime
 
 
-def test_get_pylint_score(mocker: pytest.fixture, lint_monitor: LintMonitor) -> None:
+def test_get_pylint_score(mocker: pytest.fixture, lm: LintMonitor) -> None:
     """Test the pylint score extraction functionality."""
     mock_run = mocker.patch("subprocess.run")
     mock_run.return_value.stdout = "Your code has been rated at 9.50/10"
-    assert lint_monitor.get_pylint_score() == 9.5
+    assert lm.get_pylint_score() == 9.5
 
     mock_run.side_effect = subprocess.CalledProcessError(1, "pylint")
-    assert lint_monitor.get_pylint_score() is None
+    assert lm.get_pylint_score() is None
 
     mock_run.side_effect = None
     mock_run.return_value.stdout = "Invalid score format"
-    assert lint_monitor.get_pylint_score() is None
+    assert lm.get_pylint_score() is None
 
 
-def test_calculate_improvements(lint_monitor: LintMonitor) -> None:
+def _run_test(
+    lm: LintMonitor, history: list[tuple[datetime, float]], expected_values: list[float | None]
+) -> None:
+    lm.history = deque(history)
+    improvements = lm.calculate_improvements()
+    assert len(improvements) == len(lm.TIME_WINDOWS)
+    for i, window in enumerate(lm.TIME_WINDOWS):
+        expected = expected_values[i]
+        actual = improvements[window[0]]
+        if expected is None:
+            assert actual is None
+        else:
+            assert actual == pytest.approx(expected)
+
+
+def test_calculate_improvements(lm: LintMonitor) -> None:
     """Test the improvement calculation over time windows."""
 
-    def run_test(
-        history: list[tuple[datetime, float]], expected_values: list[float | None]
-    ) -> None:
-        lint_monitor.history = deque(history)
-        improvements = lint_monitor.calculate_improvements()
-        assert len(improvements) == len(lint_monitor.TIME_WINDOWS)
-        for i, window in enumerate(lint_monitor.TIME_WINDOWS):
-            expected = expected_values[i]
-            actual = improvements[window[0]]
-            if expected is None:
-                assert actual is None
-            else:
-                assert actual == pytest.approx(expected)
-
     # Test case 1: Sufficient data for all time windows
-    run_test(
+    _run_test(
+        lm,
         [
             (NOW - timedelta(hours=1), 6.0),
             (NOW - timedelta(minutes=15), 7.0),
@@ -62,13 +64,14 @@ def test_calculate_improvements(lint_monitor: LintMonitor) -> None:
     )
 
     # Test case 2: Insufficient data for any time window
-    run_test([], [None] * len(lint_monitor.TIME_WINDOWS))
+    _run_test(lm, [], [None] * len(lm.TIME_WINDOWS))
 
     # Test case 3: Only one data point
-    run_test([(NOW, 7.0)], [None] * len(lint_monitor.TIME_WINDOWS))
+    _run_test(lm, [(NOW, 7.0)], [None] * len(lm.TIME_WINDOWS))
 
     # Test case 4: Data only within the shortest time window
-    run_test(
+    _run_test(
+        lm,
         [
             (NOW - timedelta(minutes=4), 7.0),
             (NOW, 8.0),
@@ -77,13 +80,13 @@ def test_calculate_improvements(lint_monitor: LintMonitor) -> None:
     )
 
 
-def test_get_pylint_score_no_score(mocker: pytest.fixture, lint_monitor: LintMonitor) -> None:
+def test_get_pylint_score_no_score(mocker: pytest.fixture, lm: LintMonitor) -> None:
     """Test the pylint score extraction when no score is returned."""
     mock_run = mocker.patch("subprocess.run")
     mock_run.return_value.stdout = "Some other output"
     mock_run.return_value.returncode = 1  # Simulate an error
-    lint_monitor.get_pylint_score()
-    assert lint_monitor.get_pylint_score() is None
+    lm.get_pylint_score()
+    assert lm.get_pylint_score() is None
 
 
 def test_run(mocker: pytest.fixture) -> None:
