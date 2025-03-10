@@ -4,7 +4,7 @@ from unittest.mock import patch
 from datetime import datetime, timedelta
 from collections import deque
 import subprocess
-from lint_monitor import LintMonitor
+from lint_monitor.monitor import LintMonitor
 
 class TestLintMonitor(unittest.TestCase):
     """Test cases for the LintMonitor class."""
