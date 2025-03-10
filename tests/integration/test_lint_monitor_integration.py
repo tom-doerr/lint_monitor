@@ -11,9 +11,7 @@ def test_monitor_runs_without_errors() -> None:
     # It also assumes that there are python files in the project directory.
     python_files = glob.glob("*.py") + glob.glob("**/*.py", recursive=True)
     pylint_command = ["pylint"] + python_files
-    config = MonitorConfig(
-        pylint_command=pylint_command, max_iterations=1
-    )  # Limit to one iteration for testing
+    config = MonitorConfig(pylint_command=pylint_command, max_iterations=1)
     monitor = LintMonitor(config)
     try:
         monitor.run()

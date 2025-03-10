@@ -80,11 +80,18 @@ class LintMonitor:
             self._console.log("No score found in pylint output.")
             return None
 
+        score = self._extract_score_value(output)
+        if score is None:
+            return None
+
+        self._console.log(f"Extracted Score: {score}")
+        return score
+
+    def _extract_score_value(self, output: str) -> Optional[float]:
+        """Extracts the score value from the pylint output."""
         try:
             score_str = output.split("Your code has been rated at ")[1].split("/")[0]
-            score = float(score_str)
-            self._console.log(f"Extracted Score: {score}")
-            return score
+            return float(score_str)
         except (IndexError, ValueError) as e:
             self._console.log(f"Error extracting score: {e}")
             return None
@@ -109,6 +116,10 @@ class LintMonitor:
         if not window_scores or len(window_scores) < 2:
             return None
 
+        return self._calculate_score_difference(window_scores)
+
+    def _calculate_score_difference(self, window_scores: list[float]) -> float:
+        """Calculates the difference between the last and first scores."""
         return window_scores[-1] - window_scores[0]
 
     def _get_window_scores(
@@ -118,16 +129,14 @@ class LintMonitor:
         window_start = current_time - window_delta
         return [score for timestamp, score in self.history if timestamp >= window_start]
 
-    def _create_lint_table(
-        self, score: float, improvements: dict[str, Optional[float]]
-    ) -> Table:
+    def _create_lint_table(self) -> Table:
         """Create a rich table for displaying lint quality."""
-        table = self.create_lint_table(score, improvements)
+        table = self.create_lint_table(self.last_score, self.calculate_improvements())
         return table
 
-    def _log_and_display(self, score: float, table: Table, timestamp: datetime) -> None:
-        self._log_score(score, timestamp)
-        self._display_table(table, timestamp)
+    def _log_and_display(self, timestamp: datetime) -> None:
+        self._log_score(self.last_score, timestamp)
+        self._display_table(self._create_lint_table(), timestamp)
 
     def _log_score(self, score: float, timestamp: datetime) -> None:
         with open(LOG_FILE, "a", encoding="utf-8") as f:
@@ -155,15 +164,7 @@ class LintMonitor:
         iteration = 0
         try:
             while self.running and iteration < self.config.max_iterations:
-                score = self.get_pylint_score()
-                if score is not None:
-                    timestamp = datetime.now()
-                    self.history.append((timestamp, score))
-                    self._trim_history()
-                    improvements = self.calculate_improvements()
-                    table = self._create_lint_table(score, improvements)
-                    self._log_and_display(score, table, timestamp)
-
+                self._process_iteration()
                 iteration += 1
                 time.sleep(INTERVAL)
 
@@ -175,11 +176,10 @@ class LintMonitor:
         score = self.get_pylint_score()
         if score is not None:
             timestamp = datetime.now()
+            self.last_score = score
             self.history.append((timestamp, score))
             self._trim_history()
-            improvements = self.calculate_improvements()
-            table = self._create_lint_table(score, improvements)
-            self._log_and_display(score, table, timestamp)
+            self._log_and_display(timestamp)
 
     def _trim_history(self) -> None:
         cutoff = datetime.now() - self.TIME_WINDOWS[-1][1]
