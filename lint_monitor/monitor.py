@@ -50,19 +50,6 @@ class LintMonitor:
             raise e
         return None
 
-    def calculate_improvements(self) -> dict[str, float | None]:
-        """Calculate improvements for each time window."""
-        current_time = datetime.now()
-        improvements: dict[str, float | None] = {}
-
-        for window_name, window_delta in TIME_WINDOWS:
-            improvement = self._calculate_improvement_for_window(
-                current_time, window_delta
-            )
-            improvements[window_name] = improvement
-
-        return improvements
-
     def _calculate_improvement_for_window(
         self, current_time: datetime, window_delta: timedelta
     ) -> float | None:
@@ -78,6 +65,16 @@ class LintMonitor:
         first = window_scores[0]
         last = window_scores[-1]
         return last - first
+
+    def calculate_improvements(self) -> dict[str, float | None]:
+        """Calculate improvements for each time window."""
+        current_time = datetime.now()
+        improvements: dict[str, float | None] = {}
+
+        for window_name, window_delta in TIME_WINDOWS:
+            improvements[window_name] = self._calculate_improvement_for_window(current_time, window_delta)
+
+        return improvements
 
     def _create_lint_table(self, score: float, improvements: dict[str, float | None]) -> Table:
         """Create a rich table for displaying lint quality."""
@@ -100,6 +97,20 @@ class LintMonitor:
                     Text(f"{improvement:+.2f}", style=imp_style),
                 )
         return table
+
+    def _log_and_display(self, score: float, table: Table, timestamp: datetime):
+        """Log the score to a file and display the table in the console."""
+        panel = Panel(
+            table,
+            title=f"Lint Quality at {timestamp.strftime('%Y-%m-%d %H:%M:%S')}",
+            border_style="blue",
+        )
+
+        with open(LOG_FILE, "a", encoding="utf-8") as f:
+            f.write(f"{timestamp.isoformat()} - Current: {score:.2f}/10\n")
+
+        self.console.clear()
+        self.console.print(panel)
 
     def run(self):
         """Main monitoring loop."""
@@ -127,17 +138,7 @@ class LintMonitor:
 
                     improvements = self.calculate_improvements()
                     table = self._create_lint_table(score, improvements)
-                    panel = Panel(
-                        table,
-                        title=f"Lint Quality at {timestamp.strftime('%Y-%m-%d %H:%M:%S')}",
-                        border_style="blue",
-                    )
-
-                    with open(LOG_FILE, "a", encoding="utf-8") as f:
-                        f.write(f"{timestamp.isoformat()} - Current: {score:.2f}/10\n")
-
-                    self.console.clear()
-                    self.console.print(panel)
+                    self._log_and_display(score, table, timestamp)
 
                 time.sleep(INTERVAL)
                 iteration += 1

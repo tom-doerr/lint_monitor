@@ -128,12 +128,12 @@ class TestLintMonitor(unittest.TestCase):
         score = self.monitor.get_pylint_score()
         self.assertIsNone(score)
 
-    def _run_monitor_test(self, mock_console, mock_score, expected_score):
+    def _run_monitor_test(self, mock_console, mock_score, expected_score, max_iterations=5):
         """Helper function to run monitor tests."""
         mock_score.return_value = expected_score
         mock_console.return_value.print.side_effect = KeyboardInterrupt()
         self.monitor.INTERVAL = 0.1  # Shorten interval for testing
-        self.monitor.MAX_ITERATIONS = 5  # Limit iterations
+        self.monitor.max_iterations = max_iterations  # Limit iterations
 
         try:
             self.monitor.run()
