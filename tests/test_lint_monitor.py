@@ -9,38 +9,40 @@ import pytest
 from lint_monitor.monitor import LintMonitor, MonitorConfig
 
 
+@pytest.fixture
+def lint_monitor() -> LintMonitor:
+    """Fixture to create a LintMonitor instance with a default configuration."""
+    config = MonitorConfig(pylint_command=["pylint", "evoprompt/**py"])
+    return LintMonitor(config)
+
+
 NOW = datetime.now()  # Store current datetime
 
 
-def test_get_pylint_score(mocker: pytest.fixture) -> None:
+def test_get_pylint_score(mocker: pytest.fixture, lint_monitor: LintMonitor) -> None:
     """Test the pylint score extraction functionality."""
-    config = MonitorConfig(pylint_command=["pylint", "evoprompt/**py"])
-    monitor = LintMonitor(config)
-
     mock_run = mocker.patch("subprocess.run")
     mock_run.return_value.stdout = "Your code has been rated at 9.50/10"
-    assert monitor.get_pylint_score() == 9.5
+    assert lint_monitor.get_pylint_score() == 9.5
 
     mock_run.side_effect = subprocess.CalledProcessError(1, "pylint")
-    assert monitor.get_pylint_score() is None
+    assert lint_monitor.get_pylint_score() is None
 
     mock_run.side_effect = None
     mock_run.return_value.stdout = "Invalid score format"
-    assert monitor.get_pylint_score() is None
+    assert lint_monitor.get_pylint_score() is None
 
 
-def test_calculate_improvements() -> None:
+def test_calculate_improvements(lint_monitor: LintMonitor) -> None:
     """Test the improvement calculation over time windows."""
-    config = MonitorConfig(pylint_command=["pylint", "evoprompt/**py"])
-    monitor = LintMonitor(config)
 
     def run_test(
         history: list[tuple[datetime, float]], expected_values: list[float | None]
-    ):
-        monitor.history = deque(history)
-        improvements = monitor.calculate_improvements()
-        assert len(improvements) == len(monitor.TIME_WINDOWS)
-        for i, window in enumerate(monitor.TIME_WINDOWS):
+    ) -> None:
+        lint_monitor.history = deque(history)
+        improvements = lint_monitor.calculate_improvements()
+        assert len(improvements) == len(lint_monitor.TIME_WINDOWS)
+        for i, window in enumerate(lint_monitor.TIME_WINDOWS):
             expected = expected_values[i]
             actual = improvements[window[0]]
             if expected is None:
@@ -60,10 +62,10 @@ def test_calculate_improvements() -> None:
     )
 
     # Test case 2: Insufficient data for any time window
-    run_test([], [None] * len(monitor.TIME_WINDOWS))
+    run_test([], [None] * len(lint_monitor.TIME_WINDOWS))
 
     # Test case 3: Only one data point
-    run_test([(NOW, 7.0)], [None] * len(monitor.TIME_WINDOWS))
+    run_test([(NOW, 7.0)], [None] * len(lint_monitor.TIME_WINDOWS))
 
     # Test case 4: Data only within the shortest time window
     run_test(
@@ -75,15 +77,13 @@ def test_calculate_improvements() -> None:
     )
 
 
-def test_get_pylint_score_no_score(mocker: pytest.fixture) -> None:
+def test_get_pylint_score_no_score(mocker: pytest.fixture, lint_monitor: LintMonitor) -> None:
     """Test the pylint score extraction when no score is returned."""
-    config = MonitorConfig(pylint_command=["pylint", "evoprompt/**py"])
-    monitor = LintMonitor(config)
     mock_run = mocker.patch("subprocess.run")
     mock_run.return_value.stdout = "Some other output"
     mock_run.return_value.returncode = 1  # Simulate an error
-    monitor.get_pylint_score()
-    assert monitor.get_pylint_score() is None
+    lint_monitor.get_pylint_score()
+    assert lint_monitor.get_pylint_score() is None
 
 
 def test_run(mocker: pytest.fixture) -> None:
