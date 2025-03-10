@@ -79,7 +79,9 @@ class LintMonitor:
         """Calculate improvements for each time window."""
         current_time = datetime.now()
         improvements = {
-            window_name: self._calculate_improvement_for_window(current_time, window_delta)
+            window_name: self._calculate_improvement_for_window(
+                current_time, window_delta
+            )
             for window_name, window_delta in self.TIME_WINDOWS
         }
         return improvements
@@ -96,14 +98,16 @@ class LintMonitor:
         first, last = window_scores[0], window_scores[-1]
         return last - first
 
-    def _get_window_scores(self, current_time: datetime, window_delta: timedelta) -> list[float]:
+    def _get_window_scores(
+        self, current_time: datetime, window_delta: timedelta
+    ) -> list[float]:
         """Helper function to get the scores within a time window."""
         window_start = current_time - window_delta
-        return [
-            score for timestamp, score in self.history if timestamp >= window_start
-        ]
+        return [score for timestamp, score in self.history if timestamp >= window_start]
 
-    def _create_lint_table(self, score: float, improvements: dict[str, Optional[float]]) -> Table:
+    def _create_lint_table(
+        self, score: float, improvements: dict[str, Optional[float]]
+    ) -> Table:
         """Create a rich table for displaying lint quality."""
         table = create_lint_table(score, improvements)
         return table
@@ -184,7 +188,9 @@ def add_score_row(table: Table, score: float) -> None:
     table.add_row("Current Score", Text(f"{score:.2f}/10", style=score_style))
 
 
-def add_improvement_rows(table: Table, improvements: dict[str, Optional[float]]) -> None:
+def add_improvement_rows(
+    table: Table, improvements: dict[str, Optional[float]]
+) -> None:
     for window, improvement in improvements.items():
         if improvement is not None:
             imp_style = "green" if improvement > 0 else "red"

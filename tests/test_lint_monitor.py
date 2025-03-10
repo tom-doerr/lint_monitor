@@ -60,7 +60,7 @@ def test_calculate_improvements() -> None:
             (NOW - timedelta(minutes=5), 8.0),
             (NOW, 9.0),
         ],
-        [1.0, 2.0, 2.0, 2.0, 2.0]
+        [1.0, 2.0, 2.0, 2.0, 2.0],
     )
 
     run_test([], [None] * len(LintMonitor.TIME_WINDOWS))
