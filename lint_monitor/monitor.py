@@ -49,6 +49,8 @@ class LintMonitor:
         """Run pylint and extract the score."""
         try:
             result = self._run_pylint()
+            if result is None:
+                return None
             return self._extract_score(result)
         except subprocess.CalledProcessError:
             return None
@@ -60,25 +62,29 @@ class LintMonitor:
                 self.config.pylint_command, capture_output=True, text=True, check=True
             )
             output = result.stdout.strip()
-            self._console.log(f"Pylint Output: {output}")  # Add debug logging
+            self._console.log(f"Pylint Output: {output}")
             return output
         except subprocess.CalledProcessError as e:
-            self._console.log(f"Pylint Error: {e}")  # Add debug logging
+            self._console.log(f"Pylint Error: {e}")
             return None
 
-    def _extract_score(self, last_line: str) -> Optional[float]:
+    def _extract_score(self, output: str) -> Optional[float]:
         """Helper function to extract the score from the pylint output."""
-        if not last_line or "Your code has been rated at" not in last_line:
-            self._console.log("No score found in pylint output.")  # Add debug logging
+        if not output:
+            self._console.log("No pylint output to extract score from.")
+            return None
+
+        if "Your code has been rated at" not in output:
+            self._console.log("No score found in pylint output.")
             return None
 
         try:
-            score_str = last_line.split("Your code has been rated at ")[1].split("/")[0]
+            score_str = output.split("Your code has been rated at ")[1].split("/")[0]
             score = float(score_str)
-            self._console.log(f"Extracted Score: {score}")  # Add debug logging
+            self._console.log(f"Extracted Score: {score}")
             return score
         except (IndexError, ValueError) as e:
-            self._console.log(f"Error extracting score: {e}")  # Add debug logging
+            self._console.log(f"Error extracting score: {e}")
             return None
 
     def calculate_improvements(self) -> dict[str, Optional[float]]:
