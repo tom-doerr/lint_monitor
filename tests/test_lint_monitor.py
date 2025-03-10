@@ -128,7 +128,9 @@ class TestLintMonitor(unittest.TestCase):
         score = self.monitor.get_pylint_score()
         self.assertIsNone(score)
 
-    def _run_monitor_test(self, mock_console, mock_score, expected_score, max_iterations=5):
+    def _run_monitor_test(
+        self, mock_console, mock_score, expected_score, max_iterations=5
+    ):
         """Helper function to run monitor tests."""
         mock_score.return_value = expected_score
         mock_console.return_value.print.side_effect = KeyboardInterrupt()

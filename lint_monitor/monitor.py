@@ -50,6 +50,23 @@ class LintMonitor:
             raise e
         return None
 
+    def get_pylint_score(self) -> float | None:
+        """Run pylint and extract the score."""
+        try:
+            result = subprocess.run(
+                ["pylint", "evoprompt/**py"], capture_output=True, text=True, check=True
+            )
+            last_line = result.stdout.strip()
+            if "Your code has been rated at" not in last_line:
+                return None
+            score_str = last_line.split("Your code has been rated at ")[1].split("/")[0]
+            return float(score_str)
+        except subprocess.CalledProcessError:
+            return None
+        except ValueError as e:
+            raise e
+        return None
+
     def _calculate_improvement_for_window(
         self, current_time: datetime, window_delta: timedelta
     ) -> float | None:
@@ -64,19 +81,24 @@ class LintMonitor:
 
         first = window_scores[0]
         last = window_scores[-1]
+        if not window_scores or len(window_scores) < 2:
+            return None
+
+        first = window_scores[0]
+        last = window_scores[-1]
         return last - first
 
     def calculate_improvements(self) -> dict[str, float | None]:
         """Calculate improvements for each time window."""
         current_time = datetime.now()
-        improvements: dict[str, float | None] = {}
+        return {
+            window_name: self._calculate_improvement_for_window(current_time, window_delta)
+            for window_name, window_delta in TIME_WINDOWS
+        }
 
-        for window_name, window_delta in TIME_WINDOWS:
-            improvements[window_name] = self._calculate_improvement_for_window(current_time, window_delta)
-
-        return improvements
-
-    def _create_lint_table(self, score: float, improvements: dict[str, float | None]) -> Table:
+    def _create_lint_table(
+        self, score: float, improvements: dict[str, float | None]
+    ) -> Table:
         """Create a rich table for displaying lint quality."""
         table = Table(
             title="Lint Quality Monitor",
