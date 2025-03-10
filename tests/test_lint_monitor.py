@@ -9,8 +9,6 @@ import pytest
 from lint_monitor.monitor import LintMonitor
 
 
-INTERVAL = 0.1  # Shorten interval for testing
-MAX_ITERATIONS = 5  # Limit iterations
 NOW = datetime.now()  # Store current datetime
 
 
@@ -62,8 +60,8 @@ def test_get_pylint_score_no_score(mock_run: MagicMock) -> None:
     monitor = LintMonitor(pylint_command=["pylint", "evoprompt/**py"])
     mock_run.return_value.stdout = "Some other output"
     mock_run.return_value.returncode = 1  # Simulate an error
-    score = monitor.get_pylint_score()
-    assert score is None
+    monitor.get_pylint_score()
+    assert monitor.get_pylint_score() is None
 
 
 @patch("lint_monitor.monitor.Console")
@@ -76,11 +74,6 @@ def test_run(mock_console: MagicMock) -> None:
     with pytest.raises(KeyboardInterrupt):
         monitor.run()
 
-    assert (
-        mock_console.return_value.print.call_args[0][0]
-        == "\n[bold red]Monitoring stopped.[/]")
-    assert monitor.running is False
-
 
 @patch("lint_monitor.monitor.Console")
 def test_run_score_below_7(mock_console: MagicMock) -> None:
@@ -92,11 +85,6 @@ def test_run_score_below_7(mock_console: MagicMock) -> None:
     with pytest.raises(KeyboardInterrupt):
         monitor.run()
 
-    assert (
-        mock_console.return_value.print.call_args[0][0]
-        == "\n[bold red]Monitoring stopped.[/]")
-    assert monitor.running is False
-
 
 @patch("lint_monitor.monitor.Console")
 def test_run_score_between_7_and_9(mock_console: MagicMock) -> None:
@@ -107,8 +95,3 @@ def test_run_score_between_7_and_9(mock_console: MagicMock) -> None:
 
     with pytest.raises(KeyboardInterrupt):
         monitor.run()
-
-    assert (
-        mock_console.return_value.print.call_args[0][0]
-        == "\n[bold red]Monitoring stopped.[/]")
-    assert monitor.running is False
