@@ -93,7 +93,9 @@ class LintMonitor:
         """Calculate improvements for each time window."""
         current_time = datetime.now()
         improvements = {
-            window_name: self._calculate_improvement_for_window(current_time, window_delta)
+            window_name: self._calculate_improvement_for_window(
+                current_time, window_delta
+            )
             for window_name, window_delta in self.TIME_WINDOWS
         }
         return improvements
@@ -183,5 +185,3 @@ class LintMonitor:
         cutoff = datetime.now() - self.TIME_WINDOWS[-1][1]
         while self.history and self.history[0][0] < cutoff:
             self.history.popleft()
-
-
