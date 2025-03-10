@@ -39,27 +39,12 @@ class LintMonitor:
                 ["pylint", "evoprompt/**py"], capture_output=True, text=True, check=True
             )
             last_line = result.stdout.strip()
-            if "Your code has been rated at" in last_line:
-                score_str = last_line.split("Your code has been rated at ")[1].split(
-                    "/"
-                )[0]
-                return float(score_str)
-        except subprocess.CalledProcessError:
-            return None
-        except ValueError as e:
-            raise e
-        return None
-
-    def get_pylint_score(self) -> float | None:
-        """Run pylint and extract the score."""
-        try:
-            result = subprocess.run(
-                ["pylint", "evoprompt/**py"], capture_output=True, text=True, check=True
-            )
-            last_line = result.stdout.strip()
             if "Your code has been rated at" not in last_line:
                 return None
-            score_str = last_line.split("Your code has been rated at ")[1].split("/")[0]
+            match = last_line.split("Your code has been rated at ")
+            if len(match) < 2:
+                return None
+            score_str = match[1].split("/")[0]
             return float(score_str)
         except subprocess.CalledProcessError:
             return None
@@ -76,12 +61,7 @@ class LintMonitor:
             score for timestamp, score in self.history if timestamp >= window_start
         ]
 
-        if not window_scores or len(window_scores) < 2:
-            return None
-
-        first = window_scores[0]
-        last = window_scores[-1]
-        if not window_scores or len(window_scores) < 2:
+        if len(window_scores) < 2:
             return None
 
         first = window_scores[0]
