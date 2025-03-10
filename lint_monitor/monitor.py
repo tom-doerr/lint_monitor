@@ -11,6 +11,7 @@ from typing import Optional
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
+from rich.text import Text
 
 LOG_FILE = "pylint_monitor.log"
 INTERVAL = 60
